@@ -403,7 +403,7 @@ public class PluginManager
 
         try
         {
-            Directory.Move(extractPath, targetPath);
+            Helper.MoveDirectory(extractPath, targetPath);
             return targetPath;
         }
         catch (Exception ex)

@@ -115,10 +115,12 @@ public class PluginManager
                 return upgradeDecision;
             }
 
-            var loadResult = InstallExtractedPlugin(extractPath, metaData);
+            // **优化点**: 调用了新的合并后的方法
+            var loadResult = InstallAndLoadExtractedPlugin(extractPath, metaData);
             if (!loadResult.IsSuccess || loadResult.PluginMetaData == null)
             {
                 TryCleanupExtractionDirectory(extractPath);
+                // TODO: 考虑在加载失败时删除已移动的插件目录
                 return PluginInstallResult.Fail("Failed to load plugin from " + extractPath + ": " + loadResult.ErrorMessage);
             }
 
@@ -149,7 +151,7 @@ public class PluginManager
             }
 
             // 标记旧插件目录以便在重启时删除
-            File.Create(Path.Combine(oldPlugin.PluginDirectory, Constant.NeedDelete)).Dispose();
+            MarkDirectoryForDeletion(oldPlugin.PluginDirectory);
 
             // 将新插件移动到目标位置
             var targetPath = oldPlugin.PluginDirectory + Constant.NeedUpgrade;
@@ -166,19 +168,13 @@ public class PluginManager
 
     public bool UninstallPlugin(PluginMetaData metaData)
     {
-        // 标记插件目录删除
-        File.Create(Path.Combine(metaData.PluginDirectory, Constant.NeedDelete)).Dispose();
-
-        // 插件设置目录删除
+        // **优化点**: 使用了新的辅助方法来简化逻辑和复用代码
         var combineName = Helper.GetPluginDicrtoryName(metaData);
-        var pluginSettingDirectory = Path.Combine(DataLocation.PluginSettingsDirectory, combineName);
-        if (Directory.Exists(pluginSettingDirectory))
-            File.Create(Path.Combine(pluginSettingDirectory, Constant.NeedDelete)).Dispose();
 
-        // 插件缓存目录删除
-        var pluginCacheDirectory = Path.Combine(DataLocation.PluginCacheDirectory, combineName);
-        if (Directory.Exists(pluginCacheDirectory))
-            File.Create(Path.Combine(pluginCacheDirectory, Constant.NeedDelete)).Dispose();
+        // 标记相关目录以便在下次启动时删除
+        MarkDirectoryForDeletion(metaData.PluginDirectory);
+        MarkDirectoryForDeletion(Path.Combine(DataLocation.PluginSettingsDirectory, combineName));
+        MarkDirectoryForDeletion(Path.Combine(DataLocation.PluginCacheDirectory, combineName));
 
         _pluginMetaDatas.Remove(metaData);
 
@@ -202,28 +198,7 @@ public class PluginManager
 
     #region Private Methods
 
-    private PluginLoadResult LoadPluginMetaDataFromDirectory(string pluginDirectory)
-    {
-        var metaData = GetPluginMeta(pluginDirectory);
-        if (metaData == null)
-        {
-            return PluginLoadResult.Fail("Failed to load plugin metadata", Path.GetFileName(pluginDirectory));
-        }
-
-        var result = LoadPluginPairFromMetaData(metaData);
-
-        // 记录加载结果
-        if (result.IsSuccess)
-        {
-            _logger.LogInformation($"插件加载成功: {result.PluginMetaData?.Name}");
-        }
-        else
-        {
-            _logger.LogError($"插件加载失败: {result.PluginName} - {result.ErrorMessage}");
-        }
-
-        return result;
-    }
+    #region 插件加载
 
     private List<PluginLoadResult> LoadPluginMetaDatasFromDirectories(params string[] pluginDirectories)
     {
@@ -243,6 +218,67 @@ public class PluginManager
 
         return results;
     }
+
+    private PluginLoadResult LoadPluginPairFromMetaData(PluginMetaData metaData)
+    {
+        try
+        {
+            var assemblyLoader = new PluginAssemblyLoader(metaData.ExecuteFilePath);
+            var assembly = assemblyLoader.LoadAssemblyAndDependencies();
+
+            if (assembly == null)
+            {
+                return PluginLoadResult.Fail("Assembly loading failed", metaData.Name);
+            }
+
+            var type = assemblyLoader.FromAssemblyGetTypeOfInterface(assembly, typeof(IPlugin));
+            if (type == null)
+            {
+                return PluginLoadResult.Fail("IPlugin interface not found", metaData.Name);
+            }
+
+            var assemblyName = assembly.GetName().Name;
+            if (assemblyName == null)
+            {
+                return PluginLoadResult.Fail("Assembly name is null", metaData.Name);
+            }
+
+            metaData.AssemblyName = assemblyName;
+            metaData.PluginType = type;
+
+            UpdateDirectories(metaData);
+
+            return PluginLoadResult.Success(metaData);
+        }
+        catch (FileNotFoundException ex)
+        {
+            return PluginLoadResult.Fail($"Plugin file not found: {ex.FileName}", metaData.Name, ex);
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            var loaderErrors = string.Join("; ", ex.LoaderExceptions.Select(e => e?.Message));
+            return PluginLoadResult.Fail($"Type loading failed: {loaderErrors}", metaData.Name, ex);
+        }
+        catch (Exception ex)
+        {
+            return PluginLoadResult.Fail($"Plugin loading error: {ex.Message}", metaData.Name, ex);
+        }
+    }
+
+    private void LoadPluginLanguageResources(string? pluginDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(pluginDirectory))
+        {
+            return;
+        }
+
+        Ioc.Default.GetRequiredService<Internationalization>()
+           .LoadInstalledPluginLanguages(pluginDirectory);
+    }
+
+    #endregion
+
+    #region 安装与升级
 
     private bool TryValidatePackagePath(string spkgFilePath, out string errorMessage)
     {
@@ -332,29 +368,79 @@ public class PluginManager
         return PluginInstallResult.RequiresUpgrade(upgradeMessage, existingPlugin);
     }
 
-    private PluginLoadResult InstallExtractedPlugin(string extractPath, PluginMetaData metaData)
+    /**
+     * **优化点**: 
+     * 1. 此方法合并了原有的 `InstallExtractedPlugin` 和 `LoadPluginMetaDataFromDirectory`。
+     * 2. 它处理了插件从临时目录移动到最终目录，并从最终目录加载元数据和程序集。
+     */
+    private PluginLoadResult InstallAndLoadExtractedPlugin(string extractPath, PluginMetaData tempMetaData)
     {
         try
         {
-            var pluginPath = MoveToPluginPath(extractPath, metaData.PluginID);
-            return LoadPluginMetaDataFromDirectory(pluginPath);
+            // 1. 将插件从临时路径移动到最终插件路径
+            var pluginPath = MoveToPluginPath(extractPath, tempMetaData.PluginID);
+
+            // 2. 从 *最终* 路径重新加载元数据（确保路径正确）
+            var finalMetaData = GetPluginMeta(pluginPath);
+            if (finalMetaData == null)
+            {
+                return PluginLoadResult.Fail("Failed to load plugin metadata after move", Path.GetFileName(pluginPath));
+            }
+
+            // 3. 加载插件程序集
+            var result = LoadPluginPairFromMetaData(finalMetaData);
+
+            // 4. 记录加载结果
+            if (result.IsSuccess)
+            {
+                _logger.LogInformation($"插件加载成功: {result.PluginMetaData?.Name}");
+            }
+            else
+            {
+                _logger.LogError($"插件加载失败: {result.PluginName} - {result.ErrorMessage}");
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            return PluginLoadResult.Fail("Failed to finalize plugin installation: " + ex.Message, metaData.Name, ex);
+            // 这个 catch 块处理 MoveToPluginPath 或 GetPluginMeta/LoadPluginPairFromMetaData 中的意外异常
+            return PluginLoadResult.Fail("Failed to finalize plugin installation: " + ex.Message, tempMetaData.Name, ex);
         }
     }
 
-    private void LoadPluginLanguageResources(string? pluginDirectory)
+    private string MoveToPluginPath(string extractPath, string pluginID)
     {
-        if (string.IsNullOrWhiteSpace(pluginDirectory))
+        if (!Directory.Exists(extractPath))
         {
-            return;
+            throw new DirectoryNotFoundException($"Extract path does not exist: {extractPath}");
         }
 
-        Ioc.Default.GetRequiredService<Internationalization>()
-            .LoadInstalledPluginLanguages(pluginDirectory);
+        var pluginName = Path.GetFileName(extractPath);
+        if (string.IsNullOrEmpty(pluginName) || string.IsNullOrWhiteSpace(pluginID))
+        {
+            throw new InvalidOperationException("Cannot determine plugin name or plugin id from extract path");
+        }
+
+        // 根据是否为预装插件决定目标路径
+        var targetPath = Constant.PrePluginIDs.Contains(pluginID)
+            ? Path.Combine(Constant.PreinstalledDirectory, pluginName)
+            : Path.Combine(DataLocation.PluginsDirectory, $"{pluginName}_{pluginID}");
+
+        try
+        {
+            Helper.MoveDirectory(extractPath, targetPath);
+            return targetPath;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to move plugin to target path: {ex.Message}", ex);
+        }
     }
+
+    #endregion
+
+    #region 卸载与清理
 
     private void TryCleanupExtractionDirectory(string extractPath)
     {
@@ -371,54 +457,37 @@ public class PluginManager
         }
     }
 
-    private PluginMetaData? FindInstalledPlugin(string pluginId)
-        => _pluginMetaDatas.FirstOrDefault(x => x.PluginID == pluginId);
-
-    private PluginLoadResult LoadPluginPairFromMetaData(PluginMetaData metaData)
+    /**
+     * **优化点**: 
+     * 新增的辅助方法，用于在指定目录创建删除标记文件。
+     * 封装了目录检查和异常处理逻辑。
+     */
+    private void MarkDirectoryForDeletion(string? directoryPath)
     {
+        if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
+        {
+            // 目录不存在或为空，无需标记
+            return;
+        }
+
         try
         {
-            var assemblyLoader = new PluginAssemblyLoader(metaData.ExecuteFilePath);
-            var assembly = assemblyLoader.LoadAssemblyAndDependencies();
-
-            if (assembly == null)
-            {
-                return PluginLoadResult.Fail("Assembly loading failed", metaData.Name);
-            }
-
-            var type = assemblyLoader.FromAssemblyGetTypeOfInterface(assembly, typeof(IPlugin));
-            if (type == null)
-            {
-                return PluginLoadResult.Fail("IPlugin interface not found", metaData.Name);
-            }
-
-            var assemblyName = assembly.GetName().Name;
-            if (assemblyName == null)
-            {
-                return PluginLoadResult.Fail("Assembly name is null", metaData.Name);
-            }
-
-            metaData.AssemblyName = assemblyName;
-            metaData.PluginType = type;
-
-            UpdateDirectories(metaData);
-
-            return PluginLoadResult.Success(metaData);
-        }
-        catch (FileNotFoundException ex)
-        {
-            return PluginLoadResult.Fail($"Plugin file not found: {ex.FileName}", metaData.Name, ex);
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            var loaderErrors = string.Join("; ", ex.LoaderExceptions.Select(e => e?.Message));
-            return PluginLoadResult.Fail($"Type loading failed: {loaderErrors}", metaData.Name, ex);
+            // 创建标记文件，以便在下次启动时删除
+            File.Create(Path.Combine(directoryPath, Constant.NeedDelete)).Dispose();
         }
         catch (Exception ex)
         {
-            return PluginLoadResult.Fail($"Plugin loading error: {ex.Message}", metaData.Name, ex);
+            _logger.LogWarning(ex, $"Failed to mark directory for deletion: {directoryPath}");
         }
     }
+
+    #endregion
+
+    #region 元数据处理
+
+    private PluginMetaData? FindInstalledPlugin(string pluginId)
+        => _pluginMetaDatas.FirstOrDefault(x => x.PluginID == pluginId);
+
 
     private List<PluginMetaData> GetAllPluginMetaData(string[] pluginDirectories)
     {
@@ -557,34 +626,9 @@ public class PluginManager
         return new Version(0, 0, 0);
     }
 
-    private string MoveToPluginPath(string extractPath, string pluginID)
-    {
-        if (!Directory.Exists(extractPath))
-        {
-            throw new DirectoryNotFoundException($"Extract path does not exist: {extractPath}");
-        }
+    #endregion
 
-        var pluginName = Path.GetFileName(extractPath);
-        if (string.IsNullOrEmpty(pluginName) || string.IsNullOrWhiteSpace(pluginID))
-        {
-            throw new InvalidOperationException("Cannot determine plugin name or plugin id from extract path");
-        }
-
-        // 根据是否为预装插件决定目标路径
-        var targetPath = Constant.PrePluginIDs.Contains(pluginID)
-            ? Path.Combine(Constant.PreinstalledDirectory, pluginName)
-            : Path.Combine(DataLocation.PluginsDirectory, $"{pluginName}_{pluginID}");
-
-        try
-        {
-            Helper.MoveDirectory(extractPath, targetPath);
-            return targetPath;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to move plugin to target path: {ex.Message}", ex);
-        }
-    }
+    #region 日志记录
 
     private void LogDuplicatePlugins(List<PluginMetaData> duplicateList)
     {
@@ -669,7 +713,10 @@ public class PluginManager
     }
 
     #endregion
+
+    #endregion
 }
+
 
 public class PluginLoadResult
 {

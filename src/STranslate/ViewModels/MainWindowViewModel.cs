@@ -66,6 +66,15 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         VocabularyInstance = vocabularyInstance;
         Settings = settings;
         HotkeySettings = hotkeySettings;
+
+        _i18n.OnLanguageChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        if (!UACHelper.IsUserAdministrator()) return;
+
+        TrayToolTip = $"{Constant.AppName} # {_i18n.GetTranslation("Administrator")}";
     }
 
     #endregion
@@ -1054,6 +1063,8 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             Settings.MainWindowTop = _cacheTop;
             Settings.Save();
         }
+
+        _i18n.OnLanguageChanged -= OnLanguageChanged;
         GC.SuppressFinalize(this);
     }
 

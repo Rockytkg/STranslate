@@ -34,7 +34,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STranslate.Plugin.Translate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STranslate.Plugin.Tts.MicrosoftEdge", "Plugins\STranslate.Plugin.Tts.MicrosoftEdge\STranslate.Plugin.Tts.MicrosoftEdge.csproj", "{13206580-A1C7-495F-A1FF-5157FE1FC441}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STranslate.Plugin.Ocr.WeChat", "Plugins\STranslate.Plugin.Ocr.WeChat\STranslate.Plugin.Ocr.WeChat.csproj", "{C71E0D4E-60E1-444E-9997-6113266B9B83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STranslate.Plugin.Ocr.WeChatBuiltIn", "Plugins\STranslate.Plugin.Ocr.WeChatBuiltIn\STranslate.Plugin.Ocr.WeChatBuiltIn.csproj", "{C71E0D4E-60E1-444E-9997-6113266B9B83}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STranslate.Plugin.Vocabulary.Eudict", "Plugins\STranslate.Plugin.Vocabulary.Eudict\STranslate.Plugin.Vocabulary.Eudict.csproj", "{2DF27A1E-C3BC-4453-AB63-890BE15963D5}"
 EndProject

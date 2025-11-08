@@ -1,10 +1,10 @@
-using STranslate.Plugin.Ocr.WeChat.View;
-using STranslate.Plugin.Ocr.WeChat.ViewModel;
+using STranslate.Plugin.Ocr.WeChatBuiltIn.View;
+using STranslate.Plugin.Ocr.WeChatBuiltIn.ViewModel;
 using System.IO;
 using System.Windows.Controls;
 using WeChatOcr;
 
-namespace STranslate.Plugin.Ocr.WeChat;
+namespace STranslate.Plugin.Ocr.WeChatBuiltIn;
 
 public class Main : IOcrPlugin
 {
@@ -23,7 +23,7 @@ public class Main : IOcrPlugin
 
     public Control GetSettingUI()
     {
-        _viewModel ??= new SettingsViewModel();
+        _viewModel ??= new SettingsViewModel(Context, Settings);
         _settingUi ??= new SettingsView { DataContext = _viewModel };
         return _settingUi;
     }
@@ -99,6 +99,8 @@ public class Main : IOcrPlugin
         // 提取content的值
         var finalResult = await tcs.Task;
 
+        if (_viewModel != null)
+            _viewModel.UseCount++;
         return finalResult;
     }
 

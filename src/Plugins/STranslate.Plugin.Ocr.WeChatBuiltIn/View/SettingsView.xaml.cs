@@ -1,4 +1,4 @@
-namespace STranslate.Plugin.Ocr.WeChat.View;
+namespace STranslate.Plugin.Ocr.WeChatBuiltIn.View;
 
 public partial class SettingsView
 {

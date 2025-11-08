@@ -102,7 +102,7 @@ public partial class PluginViewModel : ObservableObject
             var result = await new ContentDialog
             {
                 Title = _i18n.GetTranslation("PluginUpgrade"),
-                Content = string.Format(_i18n.GetTranslation("PluginUpgradeConfirm"), installResult.ExistingPlugin.Name, installResult.ExistingPlugin.Version, installResult.NewPlugin.Version),
+                Content = string.Format(_i18n.GetTranslation("PluginUpgradeConfirm"), installResult.ExistingPlugin.Name, installResult.ExistingPlugin.Version, installResult.NewPlugin?.Version),
                 PrimaryButtonText = _i18n.GetTranslation("Confirm"),
                 CloseButtonText = _i18n.GetTranslation("Cancel"),
                 DefaultButton = ContentDialogButton.Primary,

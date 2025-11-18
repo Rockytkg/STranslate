@@ -306,10 +306,14 @@
                                         <Run FontWeight="SemiBold" Text="{DynamicResource CustomPromptInstructionDesc2}" />
                                         <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="$source" />
                                         <Run Text="{DynamicResource CustomPromptInstructionDesc3}" />
+                                        <Run
+                                            FontSize="{DynamicResource STControlFontSize10}"
+                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                            Text="{DynamicResource CustomPromptInstructionDesc4}" />
                                         <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="$target" />
-                                        <Run Text="{DynamicResource CustomPromptInstructionDesc4}" />
-                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="$content" />
                                         <Run Text="{DynamicResource CustomPromptInstructionDesc5}" />
+                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="$content" />
+                                        <Run Text="{DynamicResource CustomPromptInstructionDesc6}" />
                                     </TextBlock>
                                 </ikw:SimpleStackPanel>
                             </Border>

@@ -259,9 +259,10 @@
     <sys:String x:Key="CustomPromptInstructionTitle">💡 Custom Prompt Instructions</sys:String>
     <sys:String x:Key="CustomPromptInstructionDesc1">Customize LLM behavior with custom prompts.</sys:String>
     <sys:String x:Key="CustomPromptInstructionDesc2">Variable substitution:</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc3">→ source language,</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc4">→ target language,</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc5">→ text to be translated</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc3">→ source language</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc4">(OCR unavailable),</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc5">→ target language,</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc6">→ text to be translated</sys:String>
 
     <!--  // Hotkeys //  -->
     <sys:String x:Key="None">None</sys:String>

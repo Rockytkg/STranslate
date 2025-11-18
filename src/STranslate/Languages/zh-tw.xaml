@@ -259,9 +259,10 @@
     <sys:String x:Key="CustomPromptInstructionTitle">💡 自訂提示詞說明</sys:String>
     <sys:String x:Key="CustomPromptInstructionDesc1">透過自訂Prompt自訂LLM行為。</sys:String>
     <sys:String x:Key="CustomPromptInstructionDesc2">變數替換：</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc3">→原始語言，</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc4">→目標語言，</sys:String>
-    <sys:String x:Key="CustomPromptInstructionDesc5">→待翻譯文本</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc3">→原始語言</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc4">「OCR 不可用」，</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc5">→目標語言，</sys:String>
+    <sys:String x:Key="CustomPromptInstructionDesc6">→待翻譯文字</sys:String>
 
     <!--  // Hotkeys //  -->
     <sys:String x:Key="None">無</sys:String>

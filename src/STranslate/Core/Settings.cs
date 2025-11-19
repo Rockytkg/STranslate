@@ -39,6 +39,8 @@ public partial class Settings : ObservableObject
 
     [ObservableProperty] public partial ElementTheme ColorScheme { get; set; }
 
+    [ObservableProperty] public partial long TranslateHistoryLimit { get; set; } = 1000;
+
     [ObservableProperty] public partial bool IsColorSchemeVisible { get; set; } = true;
 
     [ObservableProperty] public partial bool ScreenshotTranslateInImage { get; set; } = true;

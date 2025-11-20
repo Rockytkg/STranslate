@@ -173,8 +173,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var history = await _sqlService.GetDataAsync(InputText, Settings.SourceLang.ToString(), Settings.TargetLang.ToString());
 
-        if (service.Plugin is IDictionaryPlugin dictionaryPlugin &&
-            dictionaryPlugin.DictionaryResult.ResultType != DictionaryResultType.NoResult)
+        if (service.Plugin is IDictionaryPlugin dictionaryPlugin)
         {
             var result = await ExecuteDictAsync(dictionaryPlugin, cancellationToken).ConfigureAwait(false);
             if (result.ResultType == DictionaryResultType.Error)
@@ -189,7 +188,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                 Data = []
             };
             // 添加新的历史数据记录并执行字典查询
-            history.Data.Add(new(service) { Text = JsonSerializer.Serialize(result, HistoryModel.JsonOption) });
+            history.Data.Add(new(service) { DictResult = result });
             return;
         }
 
@@ -219,12 +218,12 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             historyData = new HistoryData(service);
             history.Data.Add(historyData);
         }
-        historyData.Text = JsonSerializer.Serialize(translateResult, HistoryModel.JsonOption);
+        historyData.TransResult = translateResult;
 
         if (plugin.AutoTransBack)
         {
             var backResult = await ExecuteBackAsync(plugin, target, source, cancellationToken).ConfigureAwait(false);
-            historyData.BackText = JsonSerializer.Serialize(backResult, HistoryModel.JsonOption);
+            historyData.TransBackResult = backResult;
         }
 
         if (Settings.HistoryLimit > 0)
@@ -249,7 +248,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         if (!plugin.TransResult.IsSuccess)
             return;
 
-        history?.GetData(service)?.BackText = JsonSerializer.Serialize(backResult, HistoryModel.JsonOption);
+        history?.GetData(service)?.TransBackResult = backResult;
 
         if (Settings.HistoryLimit > 0 && history != null)
             await _sqlService.InsertDataAsync(history, (long)Settings.HistoryLimit).ConfigureAwait(false);
@@ -349,22 +348,17 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (svc.Plugin is ITranslatePlugin tPlugin)
         {
-            if (JsonSerializer.Deserialize<TranslateResult>(data.Text, HistoryModel.JsonOption) is { } result)
-            {
-                tPlugin.TransResult.Update(result);
-            }
+            if (data.TransResult != null && data.TransResult.IsSuccess && !string.IsNullOrWhiteSpace(data.TransResult.Text))
+                tPlugin.TransResult.Update(data.TransResult);
 
-            if (tPlugin.AutoTransBack && !string.IsNullOrWhiteSpace(data.BackText) &&
-                JsonSerializer.Deserialize<TranslateResult>(data.BackText, HistoryModel.JsonOption) is { } backResult)
-            {
-                tPlugin.TransBackResult.Update(backResult);
-            }
+            if (tPlugin.AutoTransBack && data.TransBackResult != null && data.TransBackResult.IsSuccess && !string.IsNullOrWhiteSpace(data.TransBackResult.Text))
+                tPlugin.TransBackResult.Update(data.TransBackResult);
         }
         else if (svc.Plugin is IDictionaryPlugin dPlugin)
         {
-            if (JsonSerializer.Deserialize<DictionaryResult>(data.Text, HistoryModel.JsonOption) is { } result)
+            if (data.DictResult != null && data.DictResult.ResultType != DictionaryResultType.Error && data.DictResult.ResultType != DictionaryResultType.None)
             {
-                dPlugin.DictionaryResult.Update(result);
+                dPlugin.DictionaryResult.Update(data.DictResult);
             }
         }
     }
@@ -421,7 +415,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             await ExecuteNewTranslationAsync(service, plugin, source, target, history, cancellationToken).ConfigureAwait(false);
         }
         // 否则，只执行反向翻译（如果需要）
-        else if (plugin.AutoTransBack && string.IsNullOrEmpty(history.GetData(service)?.BackText))
+        else if (plugin.AutoTransBack && history.GetData(service)?.TransBackResult == null)
         {
             await ExecuteBackTranslationOnlyAsync(service, plugin, target, source, history, cancellationToken).ConfigureAwait(false);
         }
@@ -438,13 +432,13 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         // 添加新的历史数据记录
         var historyData = new HistoryData(service);
         history.Data.Add(historyData);
-        historyData.Text = JsonSerializer.Serialize(translateResult, HistoryModel.JsonOption);
+        historyData.TransResult = translateResult;
 
         // 执行反向翻译（如果需要且主翻译成功）
         if (plugin.AutoTransBack)
         {
             var backResult = await ExecuteBackAsync(plugin, target, source, cancellationToken).ConfigureAwait(false);
-            historyData.BackText = JsonSerializer.Serialize(backResult, HistoryModel.JsonOption);
+            historyData.TransBackResult = backResult;
         }
     }
 
@@ -456,7 +450,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
 
         var historyData = history.GetData(service);
-        historyData?.BackText = JsonSerializer.Serialize(backResult, HistoryModel.JsonOption);
+        historyData?.TransBackResult = backResult;
     }
 
     private async Task ProcessDictionaryPluginAsync(Service service, IDictionaryPlugin plugin,
@@ -473,7 +467,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         // 添加新的历史数据记录并执行字典查询
         var historyData = new HistoryData(service);
         history.Data.Add(historyData);
-        historyData.Text = JsonSerializer.Serialize(result, HistoryModel.JsonOption);
+        historyData.DictResult = result;
     }
 
     private async Task<DictionaryResult> ExecuteDictAsync(IDictionaryPlugin plugin, CancellationToken cancellationToken)
@@ -1036,7 +1030,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (string.IsNullOrEmpty(text)) return;
         Utilities.SetText(text);
-        _snakebar.ShowSuccess(_i18n.GetTranslation("OperationSuccess"));
+        _snakebar.ShowSuccess(_i18n.GetTranslation("CopySuccess"));
     }
 
     [RelayCommand]

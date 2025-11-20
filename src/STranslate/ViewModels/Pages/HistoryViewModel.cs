@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using STranslate.Core;
+using STranslate.Plugin;
 using STranslate.Views;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ public partial class HistoryViewModel : ObservableObject
     private const int searchDelayMilliseconds = 500;
 
     private readonly SqlService _sqlService;
+    private readonly ISnackbar _snackbar;
     private readonly Timer _searchTimer;
 
     private CancellationTokenSource? _searchCts;
@@ -35,9 +37,10 @@ public partial class HistoryViewModel : ObservableObject
 
     [ObservableProperty] public partial Control? HistoryContent { get; set; }
 
-    public HistoryViewModel(SqlService sqlService)
+    public HistoryViewModel(SqlService sqlService, ISnackbar snackbar)
     {
         _sqlService = sqlService;
+        _snackbar = snackbar;
         _searchTimer = new Timer(async _ => await SearchAsync(), null, Timeout.Infinite, Timeout.Infinite);
 
         _ = RefreshAsync();
@@ -86,6 +89,23 @@ public partial class HistoryViewModel : ObservableObject
 
         await LoadMoreAsync();
     }
+
+    [RelayCommand]
+    private void Delete()
+    {
+        if (SelectedItem == null)
+        {
+            _snackbar.ShowWarning($"未选中任何历史记录项");
+            return;
+        }
+
+        _sqlService.DeleteData(SelectedItem);
+
+        UpdateRemove(SelectedItem);
+    }
+
+    public void UpdateRemove(HistoryModel model) =>
+        App.Current.Dispatcher.Invoke(() => HistoryItems.Remove(model));
 
     [RelayCommand]
     private async Task LoadMoreAsync()

@@ -19,7 +19,7 @@
     <ui:Page.Resources>
         <s:BindingProxy x:Key="VmProxy" Data="{Binding RelativeSource={RelativeSource AncestorType=ui:Page}, Path=DataContext}" />
     </ui:Page.Resources>
-    <Grid Margin="20,10">
+    <Grid Margin="20,10,0,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -36,7 +36,7 @@
                 <ColumnDefinition Width="1" />
                 <ColumnDefinition Width="3*" MinWidth="300" />
             </Grid.ColumnDefinitions>
-            <Grid>
+            <Grid Margin="0,0,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="40" />
                     <RowDefinition Height="*" />
@@ -44,7 +44,6 @@
                 </Grid.RowDefinitions>
                 <TextBox
                     x:Name="PART_SearchBox"
-                    Margin="0,0,5,0"
                     VerticalAlignment="Top"
                     ui:ControlHelper.PlaceholderText="请输入搜索内容..."
                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
@@ -56,7 +55,6 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                     <ListBox
-                        Margin="0,0,5,0"
                         Background="Transparent"
                         ItemsSource="{Binding HistoryItems}"
                         SelectedItem="{Binding SelectedItem}">
@@ -65,6 +63,11 @@
                                 <MenuItem Command="{Binding Source={StaticResource VmProxy}, Path=Data.RefreshCommand}" Header="刷新">
                                     <MenuItem.Icon>
                                         <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ArrowSync_20_Regular}" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding Source={StaticResource VmProxy}, Path=Data.DeleteCommand}" Header="删除">
+                                    <MenuItem.Icon>
+                                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Delete_20_Regular}" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>
@@ -76,14 +79,6 @@
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Setter Property="VerticalContentAlignment" Value="Center" />
                                 <Setter Property="Padding" Value="10,0" />
-                                <!--<Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
-                                    </Trigger>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
-                                    </Trigger>
-                                </Style.Triggers>-->
                             </Style>
                         </ListBox.ItemContainerStyle>
 
@@ -123,8 +118,8 @@
                 Background="{DynamicResource CardStrokeColorDefaultBrush}"
                 ResizeBehavior="PreviousAndNext"
                 ResizeDirection="Columns" />
-            <ui:ScrollViewerEx Grid.Column="2" Margin="20,0,0,0">
-                <ContentControl Content="{Binding HistoryContent}" />
+            <ui:ScrollViewerEx Grid.Column="2">
+                <ContentControl Margin="20,0" Content="{Binding HistoryContent}" />
             </ui:ScrollViewerEx>
         </Grid>
     </Grid>

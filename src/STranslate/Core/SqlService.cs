@@ -430,7 +430,9 @@ public class HistoryModel
     /// <summary>
     ///     数据列表(业务使用,不映射到数据库)
     /// </summary>
-    internal List<HistoryData> Data { get; set; } = [];
+    [Write(false)]
+    [Computed]
+    public List<HistoryData> Data { get; set; } = [];
 
     public override bool Equals(object? obj)
     {
@@ -469,14 +471,19 @@ public class HistoryModel
             return Data.Any(d =>
                 d.PluginID == svc.MetaData.PluginID &&
                 d.ServiceID == svc.ServiceID &&
-                !string.IsNullOrWhiteSpace(d.Text) &&
-                (!tPlugin.AutoTransBack || !string.IsNullOrWhiteSpace(d.BackText))
+                d.TransResult != null &&
+                d.TransResult.IsSuccess &&
+                !string.IsNullOrWhiteSpace(d.TransResult.Text) &&
+                (!tPlugin.AutoTransBack || (d.TransBackResult != null && d.TransBackResult.IsSuccess && !string.IsNullOrWhiteSpace(d.TransBackResult.Text)))
             );
         else
             return Data.Any(d =>
                 d.PluginID == svc.MetaData.PluginID &&
                 d.ServiceID == svc.ServiceID &&
-                !string.IsNullOrWhiteSpace(d.Text)
+                d.DictResult != null &&
+                d.DictResult.ResultType != DictionaryResultType.None &&
+                d.DictResult.ResultType != DictionaryResultType.Error &&
+                !string.IsNullOrWhiteSpace(d.DictResult?.Text)
             );
     }
 
@@ -498,8 +505,9 @@ public class HistoryData
 {
     public string PluginID { get; set; } = string.Empty;
     public string ServiceID { get; set; } = string.Empty;
-    public string Text { get; set; } = string.Empty;
-    public string BackText { get; set; } = string.Empty;
+    public TranslateResult? TransResult { get; set; }
+    public TranslateResult? TransBackResult { get; set; }
+    public DictionaryResult? DictResult { get; set; }
 
     public HistoryData()
     {

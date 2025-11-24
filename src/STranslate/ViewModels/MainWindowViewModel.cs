@@ -806,29 +806,53 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     #region History Commands
 
     [RelayCommand]
-    private void HistoryPrevious()
+    private async Task HistoryPreviousAsync()
     {
+        HistoryModel? history = null;
         if (string.IsNullOrWhiteSpace(InputText))
         {
-            // 取第一条历史记录
+            // 如果输入为空，则获取最新的一条历史记录
+            history = (await _sqlService.GetDataAsync(1, 1))?.FirstOrDefault();
         }
         else
         {
-            // 取当前输入文本的上一条历史记录
+            // 否则，获取当前输入文本对应的历史记录，并查找上一条
+            var current = await _sqlService.GetDataAsync(InputText, Settings.SourceLang.ToString(), Settings.TargetLang.ToString());
+            if (current != null)
+            {
+                history = await _sqlService.GetPreviousAsync(current);
+            }
         }
+
+        if (history != null)
+            ExecuteTranslate(history.SourceText);
+        else
+            _snakebar.ShowWarning(_i18n.GetTranslation("OperationFailed"));
     }
 
     [RelayCommand]
-    private void HistoryNext()
+    private async Task HistoryNextAsync()
     {
+        HistoryModel? history = null;
         if (string.IsNullOrWhiteSpace(InputText))
         {
-            // 取第一条历史记录
+            // 如果输入为空，则获取最新的一条历史记录
+            history = (await _sqlService.GetDataAsync(1, 1))?.FirstOrDefault();
         }
         else
         {
-            // 取当前输入文本的下一条历史记录
+            // 否则，获取当前输入文本对应的历史记录，并查找下一条
+            var current = await _sqlService.GetDataAsync(InputText, Settings.SourceLang.ToString(), Settings.TargetLang.ToString());
+            if (current != null)
+            {
+                history = await _sqlService.GetNextAsync(current);
+            }
         }
+
+        if (history != null)
+            ExecuteTranslate(history.SourceText);
+        else
+            _snakebar.ShowWarning(_i18n.GetTranslation("OperationFailed"));
     }
 
     #endregion

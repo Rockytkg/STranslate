@@ -244,6 +244,32 @@ public class SqlService
         return await connection.QueryAsync<HistoryModel>(query, new { PageSize = pageSize, Cursor = cursor });
     }
 
+    /// <summary>
+    ///     获取上一条记录
+    /// </summary>
+    /// <param name="history"></param>
+    /// <returns></returns>
+    public async Task<HistoryModel?> GetPreviousAsync(HistoryModel history)
+    {
+        await using var connection = new SqliteConnection(DataLocation.DbConnectionString);
+        await connection.OpenAsync();
+        const string query = "SELECT * FROM History WHERE Id < @Id ORDER BY Id DESC LIMIT 1";
+        return await connection.QueryFirstOrDefaultAsync<HistoryModel>(query, new { history.Id });
+    }
+
+    /// <summary>
+    ///     获取下一条记录
+    /// </summary>
+    /// <param name="history"></param>
+    /// <returns></returns>
+    public async Task<HistoryModel?> GetNextAsync(HistoryModel history)
+    {
+        await using var connection = new SqliteConnection(DataLocation.DbConnectionString);
+        await connection.OpenAsync();
+        const string query = "SELECT * FROM History WHERE Id > @Id ORDER BY Id ASC LIMIT 1";
+        return await connection.QueryFirstOrDefaultAsync<HistoryModel>(query, new { history.Id });
+    }
+
     #endregion Asynchronous method
 
     #region Synchronous method

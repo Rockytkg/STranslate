@@ -358,9 +358,9 @@ public partial class Settings : ObservableObject
 
         App.Current.Resources["ContentControlThemeFontFamily"] = new FontFamily(FontFamily);
 
-        // TODO: https://github.com/iNKORE-NET/UI.WPF.Modern/blob/main/source/iNKORE.UI.WPF.Modern/Themes/Controls/TextStyles.xaml#L13
-        // 这句写的有问题  更新后避免更新系统字体键以避免带来其他问题
-        App.Current.Resources[System.Windows.SystemFonts.MessageFontFamilyKey] = new FontFamily(FontFamily);
+        // https://github.com/iNKORE-NET/UI.WPF.Modern/releases/tag/v0.10.2
+        // https://github.com/iNKORE-NET/UI.WPF.Modern/issues/396
+        //App.Current.Resources[System.Windows.SystemFonts.MessageFontFamilyKey] = new FontFamily(FontFamily);
     }
 
     private void ApplyFontSize()

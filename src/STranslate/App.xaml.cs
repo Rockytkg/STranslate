@@ -44,10 +44,6 @@ public partial class App : ISingleInstanceApp, INavigation, IDisposable
 
     public App()
     {
-        // 只允许严重错误才输出，大多数警告都会被抑制。
-        // 为了处理ui:Expander中的PasswordBox绑定错误
-        PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Critical;
-
         // Do not use bitmap cache since it can cause WPF second window freezing issue
         ShadowAssist.UseBitmapCache = false;
 

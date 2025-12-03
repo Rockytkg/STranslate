@@ -9,7 +9,7 @@ using Serilog.Core;
 using Serilog.Events;
 using STranslate.Core;
 using STranslate.Helpers;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using STranslate.ViewModels;
 using STranslate.Views;
@@ -91,11 +91,11 @@ public partial class App : ISingleInstanceApp, INavigation, IDisposable
                     // 注册核心服务
                     services.AddSingleton<PluginManager>();
                     services.AddSingleton<ServiceManager>();
-                    services.AddSingleton<PluginInstance>();
-                    services.AddSingleton<TranslateInstance>();
-                    services.AddSingleton<OcrInstance>();
-                    services.AddSingleton<TtsInstance>();
-                    services.AddSingleton<VocabularyInstance>();
+                    services.AddSingleton<PluginService>();
+                    services.AddSingleton<TranslateService>();
+                    services.AddSingleton<OcrService>();
+                    services.AddSingleton<TtsService>();
+                    services.AddSingleton<VocabularyService>();
                     services.AddSingleton<Internationalization>();
 
                     // 注册HTTP客户端

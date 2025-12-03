@@ -2,20 +2,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using STranslate.Core;
 using STranslate.Plugin;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public partial class VocabularyInstance : ServiceInstanceBase
+public partial class VocabularyService : BaseService
 {
     protected override ServiceType ServiceType => ServiceType.Vocabulary;
     [ObservableProperty] public partial bool HasActivedVocabulary { get; set; } = false;
 
-    public VocabularyInstance(
+    public VocabularyService(
         PluginManager pluginManager,
         ServiceManager serviceManager,
-        PluginInstance pluginInstance,
+        PluginService PluginService,
         ServiceSettings serviceSettings,
         Internationalization i18n
-    ) : base(pluginManager, serviceManager, pluginInstance, serviceSettings, i18n)
+    ) : base(pluginManager, serviceManager, PluginService, serviceSettings, i18n)
     {
         LoadPlugins<IVocabularyPlugin>();
         LoadServices<IVocabularyPlugin>();

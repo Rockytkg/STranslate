@@ -94,7 +94,7 @@ public partial class PluginMetaData : ObservableObject
     /// </summary>
     /// <returns>新的插件实例</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public IPlugin CreatePluginInstance()
+    public IPlugin CreatePluginService()
     {
         _ = PluginType ?? throw new InvalidOperationException($"Plugin type not loaded for {Name}");
 

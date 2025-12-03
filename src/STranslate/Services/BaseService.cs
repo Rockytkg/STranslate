@@ -7,15 +7,15 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public abstract partial class ServiceInstanceBase : ObservableObject, IDisposable
+public abstract partial class BaseService : ObservableObject, IDisposable
 {
     protected abstract ServiceType ServiceType { get; }
 
     private readonly PluginManager _pluginManager;
     private readonly ServiceManager _serviceManager;
-    private readonly PluginInstance _pluginInstance;
+    private readonly PluginService _PluginService;
     private readonly ServiceSettings _serviceSettings;
     private readonly Internationalization _i18n;
     private bool _isInternalTrigger;
@@ -26,17 +26,17 @@ public abstract partial class ServiceInstanceBase : ObservableObject, IDisposabl
     [ObservableProperty] public partial ObservableCollection<PluginMetaData> Plugins { get; set; } = [];
     [ObservableProperty] public partial ObservableCollection<Service> Services { get; set; } = [];
 
-    public ServiceInstanceBase(
+    public BaseService(
         PluginManager pluginManager,
         ServiceManager serviceManager,
-        PluginInstance pluginInstance,
+        PluginService PluginService,
         ServiceSettings serviceSettings,
         Internationalization i18n
         )
     {
         _pluginManager = pluginManager;
         _serviceManager = serviceManager;
-        _pluginInstance = pluginInstance;
+        _PluginService = PluginService;
         _serviceSettings = serviceSettings;
         _i18n = i18n;
 
@@ -49,7 +49,7 @@ public abstract partial class ServiceInstanceBase : ObservableObject, IDisposabl
             _ => _serviceSettings.TranSvcDatas,
         };
 
-        _pluginInstance.PluginMetaDatas.CollectionChanged += OnPluginMetaDatasCollectionChanged;
+        _PluginService.PluginMetaDatas.CollectionChanged += OnPluginMetaDatasCollectionChanged;
         Services.CollectionChanged += OnServicesCollectionChanged;
     }
 
@@ -300,7 +300,7 @@ public abstract partial class ServiceInstanceBase : ObservableObject, IDisposabl
 
     public virtual void Dispose()
     {
-        _pluginInstance.PluginMetaDatas.CollectionChanged -= OnPluginMetaDatasCollectionChanged;
+        _PluginService.PluginMetaDatas.CollectionChanged -= OnPluginMetaDatasCollectionChanged;
         Services.CollectionChanged -= OnServicesCollectionChanged;
     }
 }

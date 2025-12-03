@@ -6,7 +6,7 @@ using Microsoft.Win32;
 using STranslate.Controls;
 using STranslate.Core;
 using STranslate.Helpers;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using STranslate.ViewModels.Pages;
 using STranslate.Views;
@@ -35,9 +35,9 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
         Settings settings,
         DataProvider dataProvider,
         MainWindowViewModel mainWindowViewModel,
-        OcrInstance ocrInstance,
-        TranslateInstance translateInstance,
-        TtsInstance ttsInstance,
+        OcrService ocrService,
+        TranslateService translateService,
+        TtsService ttsService,
         Internationalization i18n,
         ISnackbar snackbar,
         INotification notification)
@@ -46,29 +46,29 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
         Settings = settings;
         DataProvider = dataProvider;
         _mainWindowViewModel = mainWindowViewModel;
-        _ocrInstance = ocrInstance;
-        _translateInstance = translateInstance;
-        _ttsInstance = ttsInstance;
+        _ocrService = ocrService;
+        _translateService = translateService;
+        _ttsService = ttsService;
         _i18n = i18n;
         _snackbar = snackbar;
         _notification = notification;
 
-        OcrEngines = _ocrInstance.Services;
-        SelectedOcrEngine = _ocrInstance.Services.FirstOrDefault(x => x.IsEnabled);
-        _transCollectionView = new() { Source = _translateInstance.Services };
+        OcrEngines = _ocrService.Services;
+        SelectedOcrEngine = _ocrService.Services.FirstOrDefault(x => x.IsEnabled);
+        _transCollectionView = new() { Source = _translateService.Services };
         _transCollectionView.Filter += OnTransFilter;
-        SelectedTranslateEngine = _translateInstance.ImageTranslateService;
+        SelectedTranslateEngine = _translateService.ImageTranslateService;
 
         // 订阅 OcrViewModel 中服务的 PropertyChanged 事件
-        _ocrInstance.Services.CollectionChanged += OnOcrServicesCollectionChanged;
+        _ocrService.Services.CollectionChanged += OnOcrServicesCollectionChanged;
         // 为现有服务订阅事件
-        foreach (var service in _ocrInstance.Services)
+        foreach (var service in _ocrService.Services)
         {
             service.PropertyChanged += OnOcrServicePropertyChanged;
         }
 
         // 监听图片翻译服务切换
-        _translateInstance.PropertyChanged += OnTranServicePropertyChanged;
+        _translateService.PropertyChanged += OnTranServicePropertyChanged;
 
         Settings.PropertyChanged += OnSettingsPropertyChanged;
     }
@@ -83,9 +83,9 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
     public DataProvider DataProvider { get; }
 
     private readonly MainWindowViewModel _mainWindowViewModel;
-    private readonly OcrInstance _ocrInstance;
-    private readonly TranslateInstance _translateInstance;
-    private readonly TtsInstance _ttsInstance;
+    private readonly OcrService _ocrService;
+    private readonly TranslateService _translateService;
+    private readonly TtsService _ttsService;
     private readonly Internationalization _i18n;
     private readonly ISnackbar _snackbar;
     private readonly INotification _notification;
@@ -160,7 +160,7 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
             _sourceImage = Utilities.ToBitmapImage(bitmap);
             DisplayImage = _sourceImage;
 
-            var ocrSvc = _ocrInstance.GetActiveSvc<IOcrPlugin>();
+            var ocrSvc = _ocrService.GetActiveSvc<IOcrPlugin>();
             if (ocrSvc == null)
                 return;
 
@@ -184,7 +184,7 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
             // 生成版面分析后的标注图像（显示合并后的边框）
             _annotatedImage = GenerateAnnotatedImage(_lastOcrResult, _sourceImage);
 
-            if (_translateInstance.Services
+            if (_translateService.Services
                 .FirstOrDefault(x => x.IsEnabled)?
                 .Plugin is not ITranslatePlugin tranSvc)
             {
@@ -276,7 +276,7 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task PlayAudioAsync(string text, CancellationToken cancellationToken)
     {
-        var ttsSvc = _ttsInstance.GetActiveSvc<ITtsPlugin>();
+        var ttsSvc = _ttsService.GetActiveSvc<ITtsPlugin>();
         if (ttsSvc == null)
             return;
 
@@ -425,14 +425,14 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
 
     private void OnTranServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(TranslateInstance.ImageTranslateService) ||
+        if (e.PropertyName != nameof(TranslateService.ImageTranslateService) ||
             _isUpdatingTranslateEngine)
             return;
 
         _isUpdatingTranslateEngine = true;
         try
         {
-            SelectedTranslateEngine = _translateInstance.ImageTranslateService;
+            SelectedTranslateEngine = _translateService.ImageTranslateService;
         }
         finally
         {
@@ -449,9 +449,9 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
         {
             // 如果当前选中项被删除以后会自动触发选中临近的一项，关闭该VM绑定界面则没有该影响
             if (value == null)
-                _translateInstance.DeactiveImTran();
+                _translateService.DeactiveImTran();
             else
-                _translateInstance.ActiveImTran(value);
+                _translateService.ActiveImTran(value);
         }
         finally
         {
@@ -1049,13 +1049,13 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
     public void Dispose()
     {
         // 取消订阅事件，防止内存泄漏
-        _ocrInstance.Services.CollectionChanged -= OnOcrServicesCollectionChanged;
-        foreach (var service in _ocrInstance.Services)
+        _ocrService.Services.CollectionChanged -= OnOcrServicesCollectionChanged;
+        foreach (var service in _ocrService.Services)
         {
             service.PropertyChanged -= OnOcrServicePropertyChanged;
         }
         _transCollectionView.Filter -= OnTransFilter;
-        _translateInstance.PropertyChanged -= OnTranServicePropertyChanged;
+        _translateService.PropertyChanged -= OnTranServicePropertyChanged;
         Settings.PropertyChanged -= OnSettingsPropertyChanged;
     }
 

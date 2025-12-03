@@ -1,21 +1,21 @@
 using CommunityToolkit.Mvvm.Input;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 
 namespace STranslate.ViewModels.Pages;
 
-public partial class TranslateViewModel(TranslateInstance instance) : ServiceViewModelBase<TranslateInstance>(instance)
+public partial class TranslateViewModel(TranslateService service) : ServiceViewModelBase<TranslateService>(service)
 {
     // 翻译服务特有的功能
     [RelayCommand]
-    private void ActiveReplace(Service svc) => Instance.ActiveReplace(svc);
+    private void ActiveReplace(Service svc) => Service.ActiveReplace(svc);
 
     [RelayCommand]
-    private void DeactiveReplace() => Instance.DeactiveReplace();
+    private void DeactiveReplace() => Service.DeactiveReplace();
 
     [RelayCommand]
-    private void ActiveImTran(Service svc) => Instance.ActiveImTran(svc);
+    private void ActiveImTran(Service svc) => Service.ActiveImTran(svc);
 
     [RelayCommand]
-    private void DeactiveImTran() => Instance.DeactiveImTran();
+    private void DeactiveImTran() => Service.DeactiveImTran();
 }

@@ -98,9 +98,9 @@ public partial class Service : ObservableObject, IDisposable
     /// <param name="obj"></param>
     /// <returns></returns>
     public override bool Equals(object? obj) =>
-        obj is Service instance &&
-        instance.MetaData.PluginID == MetaData.PluginID &&
-        instance.ServiceID == ServiceID;
+        obj is Service service &&
+        service.MetaData.PluginID == MetaData.PluginID &&
+        service.ServiceID == ServiceID;
 
     /// <summary>
     /// 获取哈希值

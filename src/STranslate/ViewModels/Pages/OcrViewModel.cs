@@ -1,8 +1,8 @@
-using STranslate.Instances;
+using STranslate.Services;
 
 namespace STranslate.ViewModels.Pages;
 
-public partial class OcrViewModel(OcrInstance instance) : ServiceViewModelBase<OcrInstance>(instance)
+public partial class OcrViewModel(OcrService service) : ServiceViewModelBase<OcrService>(service)
 {
 
 }

@@ -1,12 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using Gma.System.MouseKeyHook.HotKeys;
 using iNKORE.UI.WPF.Modern;
 using Microsoft.Extensions.Logging;
 using STranslate.Core;
 using STranslate.Helpers;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using STranslate.Resources;
 using STranslate.ViewModels.Pages;
@@ -32,10 +31,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     private double _cacheLeft;
     private double _cacheTop;
 
-    public TranslateInstance TranslateInstance { get; }
-    public OcrInstance OcrInstance { get; }
-    public TtsInstance TtsInstance { get; }
-    public VocabularyInstance VocabularyInstance { get; }
+    public TranslateService TranslateService { get; }
+    public OcrService OcrService { get; }
+    public TtsService TtsService { get; }
+    public VocabularyService VocabularyService { get; }
 
     private readonly SqlService _sqlService;
 
@@ -50,10 +49,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         IScreenshot screenshot,
         ISnackbar snackbar,
         INotification notification,
-        TranslateInstance translateInstance,
-        OcrInstance ocrInstance,
-        TtsInstance ttsInstance,
-        VocabularyInstance vocabularyInstance,
+        TranslateService translateService,
+        OcrService ocrService,
+        TtsService ttsService,
+        VocabularyService vocabularyService,
         SqlService sqlService,
         Settings settings,
         HotkeySettings hotkeySettings)
@@ -65,10 +64,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         _screenshot = screenshot;
         _snakebar = snackbar;
         _notification = notification;
-        TranslateInstance = translateInstance;
-        OcrInstance = ocrInstance;
-        TtsInstance = ttsInstance;
-        VocabularyInstance = vocabularyInstance;
+        TranslateService = translateService;
+        OcrService = ocrService;
+        TtsService = ttsService;
+        VocabularyService = vocabularyService;
         _sqlService = sqlService;
         Settings = settings;
         HotkeySettings = hotkeySettings;
@@ -164,7 +163,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         // 翻译后自动复制
         if (Settings.CopyAfterTranslation != CopyAfterTranslation.NoAction)
         {
-            var serviceList = TranslateInstance.Services.Where(x => x.IsEnabled && x.Options?.ExecMode == ExecutionMode.Automatic);
+            var serviceList = TranslateService.Services.Where(x => x.IsEnabled && x.Options?.ExecMode == ExecutionMode.Automatic);
             var service = Settings.CopyAfterTranslation == CopyAfterTranslation.Last ?
                 serviceList.LastOrDefault() :
                 serviceList.ElementAtOrDefault((int)Settings.CopyAfterTranslation - 1);
@@ -192,7 +191,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         if (Settings.HistoryLimit > 0 && history != null)
         {
             // 按服务启用顺序排序
-            var enabledServices = TranslateInstance.Services.Where(x => x.IsEnabled).ToList();
+            var enabledServices = TranslateService.Services.Where(x => x.IsEnabled).ToList();
             history.Data = [.. history.Data.OrderBy(data => enabledServices.FindIndex(svc => svc.ServiceID.Equals(data.ServiceID)))];
             await _sqlService.InsertOrUpdateDataAsync(history, (long)Settings.HistoryLimit).ConfigureAwait(false);
         }
@@ -300,7 +299,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         if (Settings.HistoryLimit > 0)
         {
-            var enabledServices = TranslateInstance.Services.Where(x => x.IsEnabled).ToList();
+            var enabledServices = TranslateService.Services.Where(x => x.IsEnabled).ToList();
             history.Data = [.. history.Data.OrderBy(data => enabledServices.FindIndex(svc => svc.ServiceID.Equals(data.ServiceID)))];
             await _sqlService.InsertOrUpdateDataAsync(history, (long)Settings.HistoryLimit).ConfigureAwait(false);
         }
@@ -349,7 +348,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private async Task<HistoryModel?> ExecuteTranslateAsync(bool checkCacheFirst, CancellationToken cancellationToken)
     {
-        var enabledSvcs = TranslateInstance.Services.Where(x => x.IsEnabled && x.Options?.ExecMode == ExecutionMode.Automatic).ToList();
+        var enabledSvcs = TranslateService.Services.Where(x => x.IsEnabled && x.Options?.ExecMode == ExecutionMode.Automatic).ToList();
         if (enabledSvcs.Count == 0)
             return null;
 
@@ -645,7 +644,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         if (ocrPlugin == null)
             return;
 
-        if (Settings.ScreenshotTranslateInImage && TranslateInstance.ImageTranslateService == null)
+        if (Settings.ScreenshotTranslateInImage && TranslateService.ImageTranslateService == null)
         {
             _notification.ShowWithButton(
                  "无法获取图片翻译服务",
@@ -775,7 +774,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private IOcrPlugin? GetOcrSvcAndNotify()
     {
-        var svc = OcrInstance.GetActiveSvc<IOcrPlugin>();
+        var svc = OcrService.GetActiveSvc<IOcrPlugin>();
         if (svc == null)
         {
             _notification.ShowWithButton(
@@ -809,7 +808,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task PlayAudioAsync(string text, CancellationToken cancellationToken)
     {
-        var ttsSvc = TtsInstance.GetActiveSvc<ITtsPlugin>();
+        var ttsSvc = TtsService.GetActiveSvc<ITtsPlugin>();
         if (ttsSvc == null)
             return;
 
@@ -823,7 +822,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task SilentTtsAsync(CancellationToken cancellationToken)
     {
-        var ttsSvc = TtsInstance.GetActiveSvc<ITtsPlugin>();
+        var ttsSvc = TtsService.GetActiveSvc<ITtsPlugin>();
         if (ttsSvc == null)
             return;
 
@@ -835,7 +834,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public async Task SilentTtsHandlerAsync(string text, ITtsPlugin? ttsSvc = default, CancellationToken cancellationToken = default)
     {
-        ttsSvc ??= TtsInstance.GetActiveSvc<ITtsPlugin>();
+        ttsSvc ??= TtsService.GetActiveSvc<ITtsPlugin>();
         if (ttsSvc == null)
             return;
 
@@ -861,7 +860,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task SaveToVocabularyAsync(string text, CancellationToken cancellationToken)
     {
-        var vocabularySvc = VocabularyInstance.GetActiveSvc<IVocabularyPlugin>();
+        var vocabularySvc = VocabularyService.GetActiveSvc<IVocabularyPlugin>();
         if (vocabularySvc == null)
             return;
 
@@ -993,7 +992,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task ReplaceTranslateAsync(CancellationToken cancellationToken)
     {
-        if (TranslateInstance.ReplaceService?.Plugin is not ITranslatePlugin transPlugin)
+        if (TranslateService.ReplaceService?.Plugin is not ITranslatePlugin transPlugin)
         {
             _notification.ShowWithButton(
                 "无法获取替换翻译服务",
@@ -1430,7 +1429,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void ResetAllServices()
     {
-        var services = TranslateInstance.Services.Where(x => x.IsEnabled).ToList();
+        var services = TranslateService.Services.Where(x => x.IsEnabled).ToList();
         foreach (var service in services)
         {
             service.Options?.TemporaryDisplay = false;

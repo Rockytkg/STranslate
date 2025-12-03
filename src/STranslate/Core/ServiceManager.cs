@@ -193,7 +193,7 @@ public class ServiceManager
             service.Options.ExecMode = settings?.Options?.ExecMode ?? ExecutionMode.Automatic;
             service.Options.AutoBackTranslation = settings?.Options?.AutoBackTranslation ?? false;
         }
-        var plugin = metaDataClone.CreatePluginInstance();
+        var plugin = metaDataClone.CreatePluginService();
         var context = new PluginContext(metaDataClone, serviceID);
         service.Plugin = plugin;
         service.Context = context;

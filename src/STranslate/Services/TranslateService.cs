@@ -3,9 +3,9 @@ using STranslate.Core;
 using STranslate.Plugin;
 using System.Windows;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public partial class TranslateInstance : ServiceInstanceBase
+public partial class TranslateService : BaseService
 {
     private readonly ServiceSettings _serviceSettings;
 
@@ -14,13 +14,13 @@ public partial class TranslateInstance : ServiceInstanceBase
 
     protected override ServiceType ServiceType => ServiceType.Translation;
 
-    public TranslateInstance(
+    public TranslateService(
         PluginManager pluginManager,
         ServiceManager serviceManager,
-        PluginInstance pluginInstance,
+        PluginService PluginService,
         ServiceSettings serviceSettings,
         Internationalization i18n
-    ) : base(pluginManager, serviceManager, pluginInstance, serviceSettings, i18n)
+    ) : base(pluginManager, serviceManager, PluginService, serviceSettings, i18n)
     {
         _serviceSettings = serviceSettings;
 

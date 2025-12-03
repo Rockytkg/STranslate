@@ -1,19 +1,19 @@
 using STranslate.Core;
 using STranslate.Plugin;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public partial class OcrInstance : ServiceInstanceBase
+public partial class OcrService : BaseService
 {
     protected override ServiceType ServiceType => ServiceType.OCR;
 
-    public OcrInstance(
+    public OcrService(
         PluginManager pluginManager,
         ServiceManager serviceManager,
-        PluginInstance pluginInstance,
+        PluginService PluginService,
         ServiceSettings serviceSettings,
         Internationalization i18n
-    ) : base(pluginManager, serviceManager, pluginInstance, serviceSettings, i18n)
+    ) : base(pluginManager, serviceManager, PluginService, serviceSettings, i18n)
     {
         LoadPlugins<IOcrPlugin>();
         LoadServices<IOcrPlugin>();

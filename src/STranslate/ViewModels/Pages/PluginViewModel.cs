@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using iNKORE.UI.WPF.Modern.Controls;
 using STranslate.Core;
 using STranslate.Helpers;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using System.Collections;
 using System.ComponentModel;
@@ -14,7 +14,7 @@ namespace STranslate.ViewModels.Pages;
 
 public partial class PluginViewModel : ObservableObject
 {
-    private readonly PluginInstance _pluginInstance;
+    private readonly PluginService _pluginService;
     private readonly Internationalization _i18n;
 
     public DataProvider DataProvider { get; }
@@ -34,45 +34,45 @@ public partial class PluginViewModel : ObservableObject
     /// <summary>
     /// 所有插件数量
     /// </summary>
-    public int TotalPluginCount => _pluginInstance.PluginMetaDatas.Count;
+    public int TotalPluginCount => _pluginService.PluginMetaDatas.Count;
 
     /// <summary>
     /// 翻译插件数量（包含翻译和词典插件）
     /// </summary>
-    public int TranslatePluginCount => _pluginInstance.PluginMetaDatas
+    public int TranslatePluginCount => _pluginService.PluginMetaDatas
         .Where(x => typeof(ITranslatePlugin).IsAssignableFrom(x.PluginType) || typeof(IDictionaryPlugin).IsAssignableFrom(x.PluginType))
         .Count();
 
     /// <summary>
     /// OCR插件数量
     /// </summary>
-    public int OcrPluginCount => _pluginInstance.PluginMetaDatas
+    public int OcrPluginCount => _pluginService.PluginMetaDatas
         .Where(x => typeof(IOcrPlugin).IsAssignableFrom(x.PluginType))
         .Count();
 
     /// <summary>
     /// TTS插件数量
     /// </summary>
-    public int TtsPluginCount => _pluginInstance.PluginMetaDatas
+    public int TtsPluginCount => _pluginService.PluginMetaDatas
         .Where(x => typeof(ITtsPlugin).IsAssignableFrom(x.PluginType))
         .Count();
 
     /// <summary>
     /// 词汇表插件数量
     /// </summary>
-    public int VocabularyPluginCount => _pluginInstance.PluginMetaDatas
+    public int VocabularyPluginCount => _pluginService.PluginMetaDatas
         .Where(x => typeof(IVocabularyPlugin).IsAssignableFrom(x.PluginType))
         .Count();
 
     public PluginViewModel(
-        PluginInstance pluginInstance,
+        PluginService pluginService,
         Internationalization i18n,
         DataProvider dataProvider,
         ISnackbar snackbar,
         Settings settings
         )
     {
-        _pluginInstance = pluginInstance;
+        _pluginService = pluginService;
         _i18n = i18n;
         DataProvider = dataProvider;
         _snackbar = snackbar;
@@ -80,12 +80,12 @@ public partial class PluginViewModel : ObservableObject
 
         _pluginCollectionView = new()
         {
-            Source = _pluginInstance.PluginMetaDatas
+            Source = _pluginService.PluginMetaDatas
         };
         _pluginCollectionView.Filter += OnPluginFilter;
 
         // 监听插件集合变化，更新计数
-        _pluginInstance.PluginMetaDatas.CollectionChanged += (s, e) =>
+        _pluginService.PluginMetaDatas.CollectionChanged += (s, e) =>
         {
             OnPropertyChanged(nameof(TotalPluginCount));
             OnPropertyChanged(nameof(TranslatePluginCount));
@@ -196,7 +196,7 @@ public partial class PluginViewModel : ObservableObject
             return; // User canceled the dialog
         }
         var spkgPluginFilePath = dialog.FileName;
-        var installResult = _pluginInstance.InstallPlugin(spkgPluginFilePath);
+        var installResult = _pluginService.InstallPlugin(spkgPluginFilePath);
 
         if (installResult.RequiredUpgrade && installResult.ExistingPlugin != null)
         {
@@ -213,7 +213,7 @@ public partial class PluginViewModel : ObservableObject
             if (result == ContentDialogResult.Primary)
             {
                 // 执行升级
-                if (_pluginInstance.UpgradePlugin(installResult.ExistingPlugin, spkgPluginFilePath))
+                if (_pluginService.UpgradePlugin(installResult.ExistingPlugin, spkgPluginFilePath))
                 {
                     var restartResult = await new ContentDialog
                     {
@@ -275,7 +275,7 @@ public partial class PluginViewModel : ObservableObject
             return;
         }
 
-        if (!_pluginInstance.UninstallPlugin(plugin))
+        if (!_pluginService.UninstallPlugin(plugin))
         {
             _ = new ContentDialog
             {

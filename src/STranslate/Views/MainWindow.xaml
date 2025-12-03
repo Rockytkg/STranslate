@@ -112,7 +112,7 @@
                     CurrentFontSize="{Binding Settings.FontSize}"
                     ExecuteCommand="{Binding TranslateCommand}"
                     ForceExecuteCommand="{Binding TranslateCommand}"
-                    HasActivedVocabulary="{Binding VocabularyInstance.HasActivedVocabulary}"
+                    HasActivedVocabulary="{Binding VocabularyService.HasActivedVocabulary}"
                     IdentifiedLanguage="{Binding IdentifiedLanguage}"
                     IsIdentify="{Binding IsIdentifyProcessing}"
                     PlayAudioCommand="{Binding PlayAudioCommand}"
@@ -176,7 +176,7 @@
                     <ListBox
                         Grid.Column="3"
                         Background="Transparent"
-                        ItemsSource="{Binding TranslateInstance.Services}">
+                        ItemsSource="{Binding TranslateService.Services}">
                         <ListBox.Resources>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Template">
@@ -243,7 +243,7 @@
                     CopyCommand="{Binding CopyCommand}"
                     ExplainCommand="{Binding ExplainCommand}"
                     InsertCommand="{Binding InsertCommand}"
-                    ItemsSource="{Binding TranslateInstance.Services}"
+                    ItemsSource="{Binding TranslateService.Services}"
                     NavigateCommand="{Binding NavigateCommand}"
                     PlayAudioCommand="{Binding PlayAudioCommand}"
                     PlayAudioUrlCommand="{Binding PlayAudioUrlCommand}"

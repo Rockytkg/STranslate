@@ -3,15 +3,15 @@ using STranslate.Core;
 using STranslate.Plugin;
 using System.Collections.ObjectModel;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public partial class PluginInstance : ObservableObject
+public partial class PluginService : ObservableObject
 {
     private readonly PluginManager _pluginManager;
 
     [ObservableProperty] public partial ObservableCollection<PluginMetaData> PluginMetaDatas { get; set; } = [];
 
-    public PluginInstance(PluginManager pluginManager)
+    public PluginService(PluginManager pluginManager)
     {
         _pluginManager = pluginManager;
         foreach (var plugin in pluginManager.AllPluginMetaDatas)

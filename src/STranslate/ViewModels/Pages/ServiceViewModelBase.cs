@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using System.Windows.Controls;
 
@@ -10,9 +10,9 @@ namespace STranslate.ViewModels.Pages;
 /// 服务 ViewModel 基类，提供通用的服务管理功能
 /// </summary>
 /// <typeparam name="T">服务实例类型</typeparam>
-public abstract partial class ServiceViewModelBase<T>(T instance) : ObservableObject where T : ServiceInstanceBase
+public abstract partial class ServiceViewModelBase<T>(T service) : ObservableObject where T : BaseService
 {
-    public T Instance { get; } = instance;
+    public T Service { get; } = service;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
@@ -42,7 +42,7 @@ public abstract partial class ServiceViewModelBase<T>(T instance) : ObservableOb
     [RelayCommand]
     private async Task AddServiceAsync()
     {
-        var result = await Instance.AddAsync();
+        var result = await Service.AddAsync();
         if (result == null)
             return;
 
@@ -52,7 +52,7 @@ public abstract partial class ServiceViewModelBase<T>(T instance) : ObservableOb
     [RelayCommand(CanExecute = nameof(CanRemoveService))]
     private async Task DeleteAsync(Service service)
     {
-        var result = await Instance.DeleteAsync(service);
+        var result = await Service.DeleteAsync(service);
         if (!result)
             return;
 
@@ -62,7 +62,7 @@ public abstract partial class ServiceViewModelBase<T>(T instance) : ObservableOb
     [RelayCommand]
     private void Duplicate(Service svc)
     {
-        var service = Instance.Duplicate(svc);
+        var service = Service.Duplicate(svc);
         SelectedItem = service;
     }
 }

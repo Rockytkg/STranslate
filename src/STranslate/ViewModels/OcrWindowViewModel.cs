@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using STranslate.Controls;
 using STranslate.Core;
-using STranslate.Instances;
+using STranslate.Services;
 using STranslate.Plugin;
 using STranslate.ViewModels.Pages;
 using STranslate.Views;
@@ -35,8 +35,8 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
         DataProvider dataProvider,
         ILogger<OcrWindowViewModel> logger,
         MainWindowViewModel mainWindowViewModel,
-        OcrInstance ocrInstance,
-        TtsInstance ttsInstance,
+        OcrService ocrService,
+        TtsService ttsService,
         Internationalization i18n,
         ISnackbar snackbar,
         INotification notification,
@@ -46,20 +46,20 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
         Settings = settings;
         DataProvider = dataProvider;
         _mainWindowViewModel = mainWindowViewModel;
-        _ocrInstance = ocrInstance;
-        _ttsInstance = ttsInstance;
+        _ocrService = ocrService;
+        _ttsService = ttsService;
         _i18n = i18n;
         _snackbar = snackbar;
         _notification = notification;
 
-        OcrEngines = _ocrInstance.Services;
-        SelectedOcrEngine = _ocrInstance.Services.FirstOrDefault(x => x.IsEnabled);
+        OcrEngines = _ocrService.Services;
+        SelectedOcrEngine = _ocrService.Services.FirstOrDefault(x => x.IsEnabled);
 
         // 订阅 OcrViewModel 中服务的 PropertyChanged 事件
-        _ocrInstance.Services.CollectionChanged += OnServicesCollectionChanged;
+        _ocrService.Services.CollectionChanged += OnServicesCollectionChanged;
 
         // 为现有服务订阅事件
-        foreach (var service in _ocrInstance.Services)
+        foreach (var service in _ocrService.Services)
         {
             service.PropertyChanged += OnOcrServicePropertyChanged;
         }
@@ -78,8 +78,8 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
 
     private readonly ILogger<OcrWindowViewModel> _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
-    private readonly OcrInstance _ocrInstance;
-    private readonly TtsInstance _ttsInstance;
+    private readonly OcrService _ocrService;
+    private readonly TtsService _ttsService;
     private readonly Internationalization _i18n;
     private readonly ISnackbar _snackbar;
     private readonly INotification _notification;
@@ -143,7 +143,7 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
             _sourceImage = Utilities.ToBitmapImage(bitmap);
             DisplayImage = _sourceImage;
 
-            var ocrSvc = _ocrInstance.GetActiveSvc<IOcrPlugin>();
+            var ocrSvc = _ocrService.GetActiveSvc<IOcrPlugin>();
             if (ocrSvc == null)
                 return;
 
@@ -222,7 +222,7 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task PlayAudioAsync(string text, CancellationToken cancellationToken)
     {
-        var ttsSvc = _ttsInstance.GetActiveSvc<ITtsPlugin>();
+        var ttsSvc = _ttsService.GetActiveSvc<ITtsPlugin>();
         if (ttsSvc == null)
             return;
 
@@ -874,8 +874,8 @@ public partial class OcrWindowViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         // 取消订阅事件，防止内存泄漏
-        _ocrInstance.Services.CollectionChanged -= OnServicesCollectionChanged;
-        foreach (var service in _ocrInstance.Services)
+        _ocrService.Services.CollectionChanged -= OnServicesCollectionChanged;
+        foreach (var service in _ocrService.Services)
         {
             service.PropertyChanged -= OnOcrServicePropertyChanged;
         }

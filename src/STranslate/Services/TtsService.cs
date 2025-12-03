@@ -1,19 +1,19 @@
 using STranslate.Core;
 using STranslate.Plugin;
 
-namespace STranslate.Instances;
+namespace STranslate.Services;
 
-public partial class TtsInstance : ServiceInstanceBase
+public partial class TtsService : BaseService
 {
     protected override ServiceType ServiceType => ServiceType.TTS;
 
-    public TtsInstance(
+    public TtsService(
         PluginManager pluginManager,
         ServiceManager serviceManager,
-        PluginInstance pluginInstance,
+        PluginService PluginService,
         ServiceSettings serviceSettings,
         Internationalization i18n
-    ) : base(pluginManager, serviceManager, pluginInstance, serviceSettings, i18n)
+    ) : base(pluginManager, serviceManager, PluginService, serviceSettings, i18n)
     {
         LoadPlugins<ITtsPlugin>();
         LoadServices<ITtsPlugin>();

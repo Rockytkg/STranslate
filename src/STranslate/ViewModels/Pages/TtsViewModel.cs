@@ -1,7 +1,7 @@
-using STranslate.Instances;
+using STranslate.Services;
 
 namespace STranslate.ViewModels.Pages;
 
-public partial class TtsViewModel(TtsInstance instance) : ServiceViewModelBase<TtsInstance>(instance)
+public partial class TtsViewModel(TtsService service) : ServiceViewModelBase<TtsService>(service)
 {
 }

@@ -1,7 +1,7 @@
-using STranslate.Instances;
+using STranslate.Services;
 
 namespace STranslate.ViewModels.Pages;
 
-public partial class VocabularyViewModel(VocabularyInstance instance) : ServiceViewModelBase<VocabularyInstance>(instance)
+public partial class VocabularyViewModel(VocabularyService service) : ServiceViewModelBase<VocabularyService>(service)
 {
 }

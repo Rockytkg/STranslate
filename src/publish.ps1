@@ -1,23 +1,46 @@
-# 清理之前的构建输出
-Write-Host "正在清理之前的构建..." -ForegroundColor Yellow
-#dotnet clean STranslate.sln --configuration Release
-Remove-Item -Path .\.artifacts\Release\ -Recurse -Force
+$ErrorActionPreference = "Stop"
 
-# 更新Fody配置
-Write-Host "正在更新FodyWeavers..." -ForegroundColor Yellow
-Copy-Item "STranslate/FodyWeavers.Release.xml" "STranslate/FodyWeavers.xml.bak"
-Move-Item -Path "STranslate/FodyWeavers.xml.bak" -Destination "STranslate/FodyWeavers.xml" -Force
+function Log([string]$msg, [string]$color = "Yellow") {
+    Write-Host $msg -ForegroundColor $color
+}
 
-# 重新生成整个解决方案
-Write-Host "正在重新生成解决方案..." -ForegroundColor Yellow
+# 清理构建输出
+Log "正在清理之前的构建..."
+$artifactPath = ".\.artifacts\Release\"
+
+if (Test-Path $artifactPath) {
+    Remove-Item -Path $artifactPath -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# 更新 Fody 配置文件
+Log "正在更新 FodyWeavers..."
+
+$src = "STranslate/FodyWeavers.Release.xml"
+$bak = "STranslate/FodyWeavers.xml.bak"
+$dst = "STranslate/FodyWeavers.xml"
+
+if (Test-Path $src) {
+    Copy-Item $src $bak -Force
+    Move-Item -Path $bak -Destination $dst -Force
+} else {
+    Log "未找到 $src，跳过更新。" "Red"
+}
+
+# 构建解决方案
+Log "正在重新生成解决方案..."
 dotnet build .\STranslate.sln --configuration Release --no-incremental
 
-# 重置FodyWeavers.xml
-Write-Host "正在还原FodyWeavers.xml..." -ForegroundColor Yellow
-git restore STranslate/FodyWeavers.xml
+# 还原 FodyWeavers.xml
+Log "正在还原 FodyWeavers.xml..."
+git restore $dst
 
-# 删除插件目录内的多余文件
-Write-Host "正在清理多余STranslate.Plugin.dll/.xml..." -ForegroundColor Yellow
-Get-ChildItem -Path ".artifacts/Release/Plugins" -Recurse -Include "STranslate.Plugin.dll","STranslate.Plugin.xml" | Remove-Item -Force
+# 清理插件目录中多余文件
+Log "正在清理多余的 STranslate.Plugin 文件..."
 
-Write-Host "构建完成！" -ForegroundColor Green
+$pluginsPath = ".artifacts/Release/Plugins"
+if (Test-Path $pluginsPath) {
+    Get-ChildItem -Path $pluginsPath -Recurse -Include "STranslate.Plugin.dll","STranslate.Plugin.xml" |
+        Remove-Item -Force -ErrorAction SilentlyContinue
+}
+
+Log "构建完成！" "Green"

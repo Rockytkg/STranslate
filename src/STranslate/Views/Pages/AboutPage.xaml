@@ -127,6 +127,13 @@
                         SelectedValuePath="Value" />
                 </ui:SettingsCard>
 
+                <ui:SettingsCard Header="检查更新">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DualScreenUpdate_20_Regular}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <Button Command="{Binding CheckUpdateCommand}" Content="检查更新" />
+                </ui:SettingsCard>
+
                 <ui:SettingsExpander Description="© 2020 zggsong &amp; STranslate Contributors" Header="STranslate">
                     <ui:SettingsExpander.HeaderIcon>
                         <Image

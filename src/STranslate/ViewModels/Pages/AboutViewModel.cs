@@ -10,6 +10,7 @@ namespace STranslate.ViewModels.Pages;
 public partial class AboutViewModel(
     Settings settings,
     DataProvider dataProvider,
+    UpdaterService updaterService,
     BackupService backupService) : ObservableObject
 {
     public Settings Settings { get; } = settings;
@@ -17,6 +18,9 @@ public partial class AboutViewModel(
     public string AppVersion => Constant.Version;
 
     #region ICommand
+
+    [RelayCommand]
+    private async Task CheckUpdateAsync() => await updaterService.UpdateAppAsync(silentUpdate: false);
 
     [RelayCommand]
     private void LocateUserData()

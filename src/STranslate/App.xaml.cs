@@ -73,8 +73,8 @@ public partial class App : ISingleInstanceApp, INavigation, IDisposable
         try
         {
             var host = Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration(c => c.SetBasePath(AppContext.BaseDirectory))
-                .ConfigureServices((context, services) =>
+                .UseContentRoot(AppContext.BaseDirectory)
+                .ConfigureServices((services) =>
                 {
                     // 注册日志服务
                     services.AddLogging(builder =>

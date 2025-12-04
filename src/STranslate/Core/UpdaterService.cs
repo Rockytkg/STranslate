@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Velopack;
-using Velopack.Sources;
 
 namespace STranslate.Core;
 
@@ -23,35 +22,37 @@ public class UpdaterService(
         await UpdateLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            //if (!silentUpdate)
-            //    _api.ShowMsg(_api.GetTranslation("pleaseWait"),
-            //        _api.GetTranslation("update_flowlauncher_update_check"));
+            if (!silentUpdate)
+                notification.Show("Update Check", "Checking for updates...");
 
             var updateManager = await GitHubUpdateManagerAsync(httpService, Constant.GitHub).ConfigureAwait(false);
 
-            // UpdateApp CheckForUpdate will return value only if the app is squirrel installed
-            var newUpdateInfo = await updateManager.CheckForUpdatesAsync().NonNull().ConfigureAwait(false);
+            var newUpdateInfo = await updateManager.CheckForUpdatesAsync().ConfigureAwait(false);
 
-            var newReleaseVersion =
-                SemanticVersioning.Version.Parse(newUpdateInfo!.TargetFullRelease.Version.ToString());
-            var currentVersion = SemanticVersioning.Version.Parse(Constant.Version);
-
-            logger.LogInformation($"Future Release <{Formatted(newUpdateInfo.TargetFullRelease)}>");
-
-            if (newReleaseVersion <= currentVersion)
+            if (newUpdateInfo == null)
             {
-                //if (!silentUpdate)
-                //    _api.ShowMsgBox(_api.GetTranslation("update_flowlauncher_already_on_latest"));
+                if (!silentUpdate)
+                    notification.Show("Update Check", "No update info found.");
+                logger.LogInformation("No update info found.");
                 return;
             }
 
-            //if (!silentUpdate)
-            //    _api.ShowMsg(_api.GetTranslation("update_flowlauncher_update_found"),
-            //        _api.GetTranslation("update_flowlauncher_updating"));
+            var newReleaseVersion = SemanticVersioning.Version.Parse(newUpdateInfo.TargetFullRelease.Version.ToString());
+            var currentVersion = SemanticVersioning.Version.Parse(Constant.Version);
+
+            logger.LogInformation($"Future Release <{JsonSerializer.Serialize(newUpdateInfo.TargetFullRelease, JsonOptions)}>");
+
+            if (newReleaseVersion <= currentVersion)
+            {
+                if (!silentUpdate)
+                    notification.Show("Update Check", "You are already on the latest version.");
+                return;
+            }
+
+            if (!silentUpdate)
+                notification.Show("Update Available", $"New version {newReleaseVersion} found. Updating...");
 
             await updateManager.DownloadUpdatesAsync(newUpdateInfo).ConfigureAwait(false);
-
-            await updateManager.WaitExitThenApplyUpdatesAsync(newUpdateInfo.TargetFullRelease).ConfigureAwait(false);
 
             //if (DataLocation.PortableDataLocationInUse())
             //{
@@ -74,11 +75,9 @@ public class UpdaterService(
 
             logger.LogInformation($"Update success:{newVersionTips}");
 
-            //if (_api.ShowMsgBox(newVersionTips, _api.GetTranslation("update_flowlauncher_new_update"),
-            //        MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-            //{
-            //    UpdateManager.RestartApp(Constant.ApplicationFileName);
-            //}
+            if (await iNKORE.UI.WPF.Modern.Controls.MessageBox.ShowAsync(newVersionTips, "STranslate",
+                    System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+                updateManager.ApplyUpdatesAndRestart(newUpdateInfo);
         }
         catch (Exception e)
         {
@@ -92,9 +91,8 @@ public class UpdaterService(
                 logger.LogError(e, $"Error Occurred");
             }
 
-            //if (!silentUpdate)
-            //    _api.ShowMsgError(_api.GetTranslation("update_flowlauncher_fail"),
-            //        _api.GetTranslation("update_flowlauncher_check_connection"));
+            if (!silentUpdate)
+                notification.Show("Update Failed", "Failed to update the application. Please check your connection.");
         }
         finally
         {
@@ -119,13 +117,15 @@ public class UpdaterService(
 
         var jsonStream = await httpService.GetAsStreamAsync(api, CancellationToken.None).ConfigureAwait(false);
         var releases = await JsonSerializer.DeserializeAsync<List<GithubRelease>>(jsonStream).ConfigureAwait(false);
-        var latest = releases.Where(r => !r.Prerelease).OrderByDescending(r => r.PublishedAt).First();
+        if (releases == null || releases.Count == 0)
+            throw new InvalidOperationException("No releases found in the repository.");
+
+        var latest = releases
+            .Where(r => !r.Prerelease)
+            .OrderByDescending(r => r.PublishedAt)
+            .FirstOrDefault() ?? throw new InvalidOperationException("No stable release found in the repository.");
         var latestUrl = latest.HtmlUrl.Replace("/tag/", "/download/");
-
-        //var client = new WebClient { Proxy = Http.WebProxy };
-        //var downloader = new FileDownloader(client);
-
-        //var manager = new UpdateManager(latestUrl, urlDownloader: downloader);
+        
         var manager = new UpdateManager(latestUrl);
 
         return manager;
@@ -133,15 +133,13 @@ public class UpdaterService(
 
     private string NewVersionTips(string version)
     {
-        var tips = string.Format(_api.GetTranslation("newVersionTips"), version);
+        var tips = string.Format("New version {0} is available, would you like to restart STranslate to use the update?", version);
 
         return tips;
     }
 
-    private static string Formatted<T>(T t)
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        var formatted = JsonSerializer.Serialize(t, new JsonSerializerOptions { WriteIndented = true });
-
-        return formatted;
-    }
+        WriteIndented = true
+    };
 }

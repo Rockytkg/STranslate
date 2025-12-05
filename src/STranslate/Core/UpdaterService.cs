@@ -29,20 +29,12 @@ public class UpdaterService(
 
             var updateManager = await GitHubUpdateManagerAsync(httpService, Constant.GitHub).ConfigureAwait(false);
 
-            if (!updateManager.IsInstalled)
-            {
-                if (!silentUpdate)
-                    notification.Show("Update Check", "Application is not installed via Velopack. Update aborted.");
-                logger.LogInformation("Application is not installed via Velopack. Update aborted.");
-                return;
-            }
-
             var newUpdateInfo = await updateManager.CheckForUpdatesAsync().ConfigureAwait(false);
 
             if (newUpdateInfo == null)
             {
                 if (!silentUpdate)
-                    notification.Show("Update Check", "No update info found.");
+                    MessageBox.Show("No update info found.");
                 logger.LogInformation("No update info found.");
                 return;
             }
@@ -55,7 +47,7 @@ public class UpdaterService(
             if (newReleaseVersion <= currentVersion)
             {
                 if (!silentUpdate)
-                    notification.Show("Update Check", "You are already on the latest version.");
+                    MessageBox.Show("You are already on the latest version.");
                 return;
             }
 

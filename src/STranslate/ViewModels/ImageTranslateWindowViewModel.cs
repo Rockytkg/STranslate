@@ -187,9 +187,7 @@ public partial class ImageTranslateWindowViewModel : ObservableObject, IDisposab
             // 生成版面分析后的标注图像（显示合并后的边框）
             _annotatedImage = GenerateAnnotatedImage(_lastOcrResult, _sourceImage);
 
-            if (_translateService.Services
-                .FirstOrDefault(x => x.IsEnabled)?
-                .Plugin is not ITranslatePlugin tranSvc)
+            if (_translateService.ImageTranslateService?.Plugin is not ITranslatePlugin tranSvc)
             {
                 _snackbar.ShowWarning(_i18n.GetTranslation("NoTranslateService"));
                 return;

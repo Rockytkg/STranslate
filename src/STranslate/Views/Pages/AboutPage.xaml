@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cnvt="clr-namespace:STranslate.Converters"
+    xmlns:core="clr-namespace:STranslate.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -129,7 +130,7 @@
 
                 <ui:SettingsExpander
                     Description="© 2020 zggsong &amp; STranslate Contributors"
-                    Header="STranslate"
+                    Header="{x:Static core:Constant.AppName}"
                     IsExpanded="True">
                     <ui:SettingsExpander.HeaderIcon>
                         <Image
@@ -150,10 +151,7 @@
                     <ui:SettingsExpander.Items>
 
                         <ui:SettingsCard Header="{DynamicResource Version}">
-                            <ikw:SimpleStackPanel
-                                Margin="0,0,-28,0"
-                                Orientation="Horizontal"
-                                Spacing="4">
+                            <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="4">
                                 <Button Command="{Binding CheckUpdateCommand}">
                                     <ui:IconAndText Content="{DynamicResource CheckUpdate}" Icon="{x:Static ui:FluentSystemIcons.GlobeArrowUp_20_Regular}" />
                                 </Button>
@@ -165,18 +163,18 @@
 
                         <ui:SettingsCard Header="{DynamicResource Website}">
                             <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                <ui:HyperlinkButton Content="官网" NavigateUri="https://ai.baidu.com/tech/ocr" />
-                                <ui:HyperlinkButton Content="群组" NavigateUri="https://ai.baidu.com/tech/ocr" />
-                                <ui:HyperlinkButton Content="Github" NavigateUri="https://ai.baidu.com/tech/ocr" />
-                                <ui:HyperlinkButton Content="Issue" NavigateUri="https://ai.baidu.com/tech/ocr" />
+                                <ui:HyperlinkButton Content="官网" NavigateUri="{x:Static core:Constant.WebsiteUri}" />
+                                <ui:HyperlinkButton Content="群组" NavigateUri="{x:Static core:Constant.GroupUri}" />
+                                <ui:HyperlinkButton Content="Github" NavigateUri="{x:Static core:Constant.GithubUri}" />
+                                <ui:HyperlinkButton Content="Issue" NavigateUri="{x:Static core:Constant.ReportUri}" />
                             </ikw:SimpleStackPanel>
                         </ui:SettingsCard>
 
                         <ui:SettingsCard Header="鸣谢">
                             <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="6">
-                                <ui:HyperlinkButton Content="Flow Launcher" NavigateUri="https://ai.baidu.com/tech/ocr" />
-                                <ui:HyperlinkButton Content="UI.WPF.Modern" NavigateUri="https://ai.baidu.com/tech/ocr" />
-                                <ui:HyperlinkButton Content="Bob" NavigateUri="https://ai.baidu.com/tech/ocr" />
+                                <ui:HyperlinkButton Content="Flow Launcher" NavigateUri="{x:Static core:Constant.FlowLauncherUri}" />
+                                <ui:HyperlinkButton Content="UI.WPF.Modern" NavigateUri="{x:Static core:Constant.UiWpfMordenUri}" />
+                                <ui:HyperlinkButton Content="Bob" NavigateUri="{x:Static core:Constant.BobUri}" />
                             </ikw:SimpleStackPanel>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>

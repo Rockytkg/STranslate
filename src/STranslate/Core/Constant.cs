@@ -26,13 +26,19 @@ public class Constant
     public const string InfoFileName = ".INFO";
     public const string BackupFileName = ".BACKUP";
 
-    public const string GitHub = "https://github.com/ZGGSONG/STranslate";
-    public const string Website = "https://stranslate.zggsong.com";
-    public const string Sponsor = "https://github.com/ZGGSONG/STranslate/tree/2.0?tab=readme-ov-file#donations";
-    public const string Group = "https://t.me/stranslatewpf";
-    public const string Report = "https://github.com/zggsong/stranslate/issues/new/choose";
+    public const string Github = "https://github.com/STranslate/STranslate";
     public const string Dev = "Dev";
     public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location.NonNull()).ProductVersion.NonNull();
+
+    public static readonly Uri GithubUri = new(Github);
+    public static readonly Uri ReportUri = new("https://github.com/STranslate/STranslate/issues/new/choose");
+    public static readonly Uri WebsiteUri = new("https://stranslate.zggsong.com");
+    public static readonly Uri SponsorUri = new("https://github.com/STranslate/STranslate/tree/2.0?tab=readme-ov-file#donations");
+    public static readonly Uri GroupUri = new("https://t.me/stranslatewpf");
+    public static readonly Uri FlowLauncherUri = new("https://github.com/Flow-Launcher/Flow.Launcher");
+    public static readonly Uri UiWpfMordenUri = new("https://github.com/iNKORE-NET/UI.WPF.Modern");
+    public static readonly Uri BobUri = new("https://bobtranslate.com/");
+
 
     /// <summary>
     ///     用户软件根目录

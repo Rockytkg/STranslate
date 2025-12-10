@@ -27,7 +27,7 @@ public class UpdaterService(
             if (!silentUpdate)
                 notification.Show(i18n.GetTranslation("UpdateCheck"), i18n.GetTranslation("CheckingForUpdates"));
 
-            var updateManager = new UpdateManager(new GithubSource(Constant.GitHub, accessToken: default, prerelease: false));
+            var updateManager = new UpdateManager(new GithubSource(Constant.Github, accessToken: default, prerelease: false));
 
             var newUpdateInfo = await updateManager.CheckForUpdatesAsync();
 

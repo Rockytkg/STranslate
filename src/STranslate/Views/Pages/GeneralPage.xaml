@@ -183,7 +183,13 @@
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsExpander Description="{DynamicResource General_ScreenshotTranslateInImageDescription}" Header="{DynamicResource General_ScreenshotTranslateInImage}">
+                <ui:SettingsExpander Header="{DynamicResource General_ScreenshotTranslateInImage}">
+                    <ui:SettingsExpander.Description>
+                        <WrapPanel Orientation="Horizontal">
+                            <TextBlock Text="{DynamicResource General_ScreenshotTranslateInImageDescription}" />
+                            <ui:HyperlinkButton Content="{DynamicResource Document}" NavigateUri="https://stranslate.zggsong.com/docs/#%E5%9B%BE%E7%89%87%E7%BF%BB%E8%AF%91" />
+                        </WrapPanel>
+                    </ui:SettingsExpander.Description>
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawImage_20_Regular}" />
                     </ui:SettingsExpander.HeaderIcon>
@@ -192,10 +198,7 @@
                         OffContent="{DynamicResource Disable}"
                         OnContent="{DynamicResource Enable}" />
                     <ui:SettingsExpander.Items>
-                        <ui:SettingsCard>
-                            <ui:SettingsCard.Header>
-                                <TextBlock Text="{DynamicResource General_ScreenshotTranslateInImageButtonVisible}" />
-                            </ui:SettingsCard.Header>
+                        <ui:SettingsCard Header="{DynamicResource General_ScreenshotTranslateInImageButtonVisible}">
                             <ui:ToggleSwitch
                                 IsOn="{Binding Settings.IsScreenshotTranslateInImageVisible}"
                                 OffContent="{DynamicResource Hide}"

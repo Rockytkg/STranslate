@@ -118,7 +118,7 @@ public class ExternalCallService(
 
     private void ExecuteExternalCall(ExternalCallAction action, string content)
     {
-        App.Current.Dispatcher.Invoke(() =>
+        App.Current.Dispatcher.Invoke(async () =>
         {
             switch (action)
             {
@@ -143,7 +143,7 @@ public class ExternalCallService(
                     else
                     {
                         using var bitmap = Utilities.ToBitmap(content);
-                        _ = viewModel.ScreenshotTranslateHandlerAsync(bitmap);
+                        await viewModel.ScreenshotTranslateHandlerAsync(bitmap);
                     }
                     break;
                 case ExternalCallAction.translate_crossword:
@@ -168,7 +168,7 @@ public class ExternalCallService(
                     else
                     {
                         using var bitmap = Utilities.ToBitmap(content);
-                        _ = viewModel.OcrHandlerAsync(bitmap);
+                        await viewModel.OcrHandlerAsync(bitmap);
                     }
                     break;
                 case ExternalCallAction.ocr_silence:
@@ -184,7 +184,7 @@ public class ExternalCallService(
                     else
                     {
                         using var bitmap = Utilities.ToBitmap(content);
-                        _ = viewModel.SilentOcrHandlerAsync(bitmap);
+                        await viewModel.SilentOcrHandlerAsync(bitmap);
                     }
                     break;
                 case ExternalCallAction.ocr_qrcode:
@@ -193,7 +193,7 @@ public class ExternalCallService(
                     else
                     {
                         using var bitmap = Utilities.ToBitmap(content);
-                        _ = viewModel.QrCodeHandlerAsync(bitmap);
+                        await viewModel.QrCodeHandlerAsync(bitmap);
                     }
                     break;
                 case ExternalCallAction.open_window:
@@ -219,7 +219,7 @@ public class ExternalCallService(
                         viewModel.SilentTtsCommand.Execute(null);
                     }
                     else
-                        _ = viewModel.SilentTtsHandlerAsync(content);
+                        await viewModel.SilentTtsHandlerAsync(content);
                     break;
                 default:
                     break;

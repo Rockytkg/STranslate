@@ -141,7 +141,10 @@ public class ExternalCallService(
                     if (string.IsNullOrWhiteSpace(content))
                         viewModel.ScreenshotTranslateCommand.Execute(null);
                     else
-                        _ = viewModel.ScreenshotTranslateHandlerAsync(Utilities.ToBitmap(content));
+                    {
+                        using var bitmap = Utilities.ToBitmap(content);
+                        _ = viewModel.ScreenshotTranslateHandlerAsync(bitmap);
+                    }
                     break;
                 case ExternalCallAction.translate_crossword:
                     viewModel.CrosswordTranslateCommand.Execute(null);
@@ -150,19 +153,48 @@ public class ExternalCallService(
                     viewModel.ToggleMouseHookTranslateCommand.Execute(null);
                     break;
                 case ExternalCallAction.translate_replace:
-                    viewModel.ReplaceTranslateCommand.Execute(null);
+                    {
+                        if (viewModel.ReplaceTranslateCommand.IsRunning)
+                        {
+                            viewModel.ReplaceTranslateCancelCommand.Execute(null);
+                            return;
+                        }
+                        viewModel.ReplaceTranslateCommand.Execute(null);
+                    }
                     break;
                 case ExternalCallAction.ocr:
                     if (string.IsNullOrWhiteSpace(content))
                         viewModel.OcrCommand.Execute(null);
                     else
-                        _ = viewModel.OcrHandlerAsync(Utilities.ToBitmap(content));
+                    {
+                        using var bitmap = Utilities.ToBitmap(content);
+                        _ = viewModel.OcrHandlerAsync(bitmap);
+                    }
                     break;
                 case ExternalCallAction.ocr_silence:
                     if (string.IsNullOrWhiteSpace(content))
+                    {
+                        if (viewModel.SilentOcrCommand.IsRunning)
+                        {
+                            viewModel.SilentOcrCancelCommand.Execute(null);
+                            return;
+                        }
                         viewModel.SilentOcrCommand.Execute(null);
+                    }
                     else
-                        _ = viewModel.SilentOcrHandlerAsync(Utilities.ToBitmap(content));
+                    {
+                        using var bitmap = Utilities.ToBitmap(content);
+                        _ = viewModel.SilentOcrHandlerAsync(bitmap);
+                    }
+                    break;
+                case ExternalCallAction.ocr_qrcode:
+                    if (string.IsNullOrWhiteSpace(content))
+                        viewModel.QrCodeCommand.Execute(null);
+                    else
+                    {
+                        using var bitmap = Utilities.ToBitmap(content);
+                        _ = viewModel.QrCodeHandlerAsync(bitmap);
+                    }
                     break;
                 case ExternalCallAction.open_window:
                     viewModel.ToggleAppCommand.Execute(null);
@@ -171,14 +203,21 @@ public class ExternalCallService(
                     viewModel.OpenSettingsCommand.Execute(null);
                     break;
                 case ExternalCallAction.open_history:
-                    //TODO
+                    viewModel.OpenHistoryCommand.Execute(null);
                     break;
                 case ExternalCallAction.forbiddenhotkey:
                     viewModel.ToggleGlobalHotkey();
                     break;
                 case ExternalCallAction.tts_silence:
                     if (string.IsNullOrWhiteSpace(content))
+                    {
+                        if (viewModel.SilentTtsCommand.IsRunning)
+                        {
+                            viewModel.SilentTtsCancelCommand.Execute(null);
+                            return;
+                        }
                         viewModel.SilentTtsCommand.Execute(null);
+                    }
                     else
                         _ = viewModel.SilentTtsHandlerAsync(content);
                     break;
@@ -234,6 +273,7 @@ public enum ExternalCallAction
     translate_replace,
     ocr,
     ocr_silence,
+    ocr_qrcode,
     open_window,
     open_preference,
     open_history,

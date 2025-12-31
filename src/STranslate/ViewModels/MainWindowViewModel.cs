@@ -740,6 +740,11 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
 
         using var bitmap = await _screenshot.GetScreenshotAsync();
+        await QrCodeHandlerAsync(bitmap);
+    }
+
+    public async Task QrCodeHandlerAsync(System.Drawing.Bitmap? bitmap)
+    {
         if (bitmap == null) return;
         var window = await SingletonWindowOpener.OpenAsync<OcrWindow>();
         ((OcrWindowViewModel)window.DataContext).QrCode(bitmap);

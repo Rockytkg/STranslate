@@ -84,17 +84,17 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void OnGlobalKeyboardKeyDown(Key key)
     {
-        if (key == Key.LeftCtrl)
+        if (key == Key.LeftAlt)
         {
-            IsMouseHook = true;
+            IsIncreamentalTranslate = true;
         }
     }
 
     private void OnGlobalKeyboardKeyUp(Key key)
     {
-        if (key == Key.LeftCtrl)
+        if (key == Key.LeftAlt)
         {
-            IsMouseHook = false;
+            IsIncreamentalTranslate = false;
         }
     }
 
@@ -127,6 +127,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool IsMouseHook { get; set; } = false;
+
+    [ObservableProperty]
+    public partial bool IsIncreamentalTranslate { get; set; } = false;
 
     [ObservableProperty]
     public partial bool IsIdentifyProcessing { get; set; } = false;
@@ -1037,10 +1040,48 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     #endregion
 
+    #region Increatemental Translate
+
+    partial void OnIsIncreamentalTranslateChanged(bool enable)
+    {
+        if (enable)
+        {
+            Show();
+            IsTopmost = true;
+            _ = MouseKeyHelper.StartMouseTextSelectionAsync();
+            MouseKeyHelper.MouseTextSelected += OnMouseTextSelectedIncreatemental;
+        }
+        else
+        {
+            IsTopmost = false;
+            MouseKeyHelper.StopMouseTextSelection();
+            MouseKeyHelper.MouseTextSelected -= OnMouseTextSelectedIncreatemental;
+
+            // 执行翻译
+            if (string.IsNullOrWhiteSpace(InputText))
+                return;
+
+            Show();
+            TranslateCommand.Execute(null);
+        }
+    }
+
+    private void OnMouseTextSelectedIncreatemental(string text)
+    {
+        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            InputText += Utilities.LinebreakHandler(text, Settings.LineBreakHandleType);
+        });
+    }
+
+    #endregion
+
     #region Mouse Hook Feature
 
     [RelayCommand]
     private void ToggleMouseHookTranslate() => IsMouseHook = !IsMouseHook;
+
+    partial void OnIsMouseHookChanged(bool value) => _ = ToggleMouseHookAsync(value);
 
     private async Task ToggleMouseHookAsync(bool enable)
     {
@@ -1609,8 +1650,6 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
         _debounceExecutor.Execute(Execute, TimeSpan.FromMilliseconds(Settings.AutoTranslateDelayMs));
     }
-
-    partial void OnIsMouseHookChanged(bool value) => _ = ToggleMouseHookAsync(value);
 
     private void UpdateCaret()
     {

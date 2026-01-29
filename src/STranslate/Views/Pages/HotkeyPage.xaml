@@ -175,7 +175,11 @@
                             <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.TextIndentIncrease_20_Regular}" />
                         </ui:SettingsCard.HeaderIcon>
 
-                        <ComboBox ItemsSource="{Binding DataProvider.IncrementalTranslateKeys}" SelectedValue="{Binding HotkeySettings.IncrementalTranslateKey}" />
+                        <ComboBox
+                            DisplayMemberPath="Display"
+                            ItemsSource="{Binding DataProvider.IncrementalTranslateKeys}"
+                            SelectedValue="{Binding HotkeySettings.IncrementalTranslateKey}"
+                            SelectedValuePath="Value" />
                     </ui:SettingsCard>
                 </control:CardGroup>
 

@@ -180,23 +180,25 @@ public class DataProvider
 
     #region IncrementalTranslateKeys
 
-    public List<Key> IncrementalTranslateKeys { get; } =
+    public List<KeyItem> IncrementalTranslateKeys { get; } =
     [
-        Key.None,
+        new(Key.None, "None"),
 
-        Key.F1,
-        Key.F2,
-        Key.F3,
-        Key.F4,
-        Key.F5,
-        Key.F6,
-        Key.F7,
-        Key.F8,
-        Key.F9,
-        Key.F10,
-        Key.F11,
-        Key.F12,
+        new(Key.F1, "F1"),
+        new(Key.F2, "F2"),
+        new(Key.F3, "F3"),
+        new(Key.F4, "F4"),
+        new(Key.F5, "F5"),
+        new(Key.F6, "F6"),
+        new(Key.F7, "F7"),
+        new(Key.F8, "F8"),
+        new(Key.F9, "F9"),
+        new(Key.F10, "F10"),
+        new(Key.F11, "F11"),
+        new(Key.F12, "F12"),
     ];
+
+    public record KeyItem(Key Value, string Display);
 
     #endregion
 }

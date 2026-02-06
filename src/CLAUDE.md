@@ -153,7 +153,7 @@ STranslate.Plugin.Translate.DeepLX/
 
 **IPluginContext** (提供给插件)
 - `MetaData`, `Logger`, `HttpService`, `AudioPlayer`, `Snackbar`, `Notification`
-- `LoadSettingStorage<T>()` / `SaveSettingStorage<T>()` - 持久化存储
+- `LoadSettingStorage<T>()` / `SaveSettingStorage<T>()` - 持久化存储（自动定位到插件专属目录）
 - `GetTranslation(key)` - i18n 支持
 
 **ITranslatePlugin** (翻译插件)
@@ -165,16 +165,49 @@ STranslate.Plugin.Translate.DeepLX/
 - `RecognizeAsync(OcrRequest)` - 图像转文本
 - `SupportedLanguages` - 可用语言
 
+### Service 与 Plugin 的关系
+
+理解 **Service** 和 **Plugin** 的区别至关重要：
+
+- **Plugin (`PluginMetaData`)**: 插件的类型定义，包含程序集信息、元数据。同一插件类型可被多个 Service 共享使用。
+- **Service**: 插件的运行时实例，拥有独立的配置、状态和服务 ID (`ServiceID`)。多个 Service 可使用同一 Plugin 类型（如两个不同 API Key 的百度翻译服务）。
+
+Service 创建流程（`ServiceManager.CreateService()`）：
+1. 克隆 `PluginMetaData`（每个 Service 有自己的副本）
+2. 创建或重用 `ServiceID`（GUID）
+3. 通过 `Activator.CreateInstance()` 创建插件实例
+4. 创建 `PluginContext` 提供给插件
+5. 组装 `Service` 对象，包含 `Plugin`、`MetaData`、`Context` 和 `Options`
+
 ### 数据流：翻译示例
 
-1. 用户触发翻译（快捷键、UI）
-2. `TranslateService` 获取激活的服务
-3. 对于每个 `Service`：
-   - 创建 `TranslateRequest(text, sourceLang, targetLang)`
-   - 调用 `plugin.TranslateAsync(request, result)`
-   - 插件使用 `IPluginContext.HttpService` 进行 API 调用
-   - 结果更新 `TranslateResult` 属性（ObservableObject）
-4. UI 绑定到 `TranslateResult.Text`, `IsProcessing`, `IsSuccess`
+1. **用户触发翻译**（快捷键、UI）→ `MainWindowViewModel.TranslateCommand`
+2. **翻译准备**：
+   - 取消进行中的操作
+   - 重置所有服务状态（`ResetAllServices()`）
+   - 语言检测（`LanguageDetector.GetLanguageAsync()`）
+3. **获取激活服务**：`TranslateService` 返回 `ExecutionMode.Automatic` 的启用服务
+4. **并行执行**（`ExecuteTranslationForServicesAsync`）：
+   - 使用 `SemaphoreSlim` 限制并发数（`ProcessorCount * 10`）
+   - 对每个 Service 调用 `ExecuteTranslationHandlerAsync`
+5. **插件执行**（`ExecuteAsync`）：
+   ```csharp
+   plugin.Reset();
+   plugin.TransResult.IsProcessing = true;
+   await plugin.TranslateAsync(
+       new TranslateRequest(InputText, source, target),
+       plugin.TransResult,
+       cancellationToken
+   );
+   ```
+6. **插件内部**：
+   - 使用 `Context.LoadSettingStorage<Settings>()` 获取 API 密钥等配置
+   - 使用 `Context.HttpService` 发起 HTTP 请求（支持代理）
+   - 解析响应，调用 `result.Success(text)` 或 `result.Fail(message)`
+7. **结果处理**：
+   - `TranslateResult` 是 `ObservableObject`，自动更新 UI
+   - 如启用回译，调用 `ExecuteBackAsync()`
+   - 保存到历史数据库（`SqlService`）
 
 ### 设置与存储
 
@@ -190,9 +223,9 @@ STranslate.Plugin.Translate.DeepLX/
 - `ServiceSettings.json` - 服务配置（启用、顺序、选项）
 
 **插件存储**
-- 设置：`%APPDATA%\STranslate\Settings\Plugins\{PluginName}_{PluginID}\`
+- 设置：`%APPDATA%\STranslate\Settings\Plugins\{PluginName}_{PluginID}\{ServiceID}.json`
 - 缓存：`%APPDATA%\STranslate\Cache\Plugins\{PluginName}_{PluginID}\`
-- 通过 `IPluginContext.LoadSettingStorage<T>()` 访问
+- 通过 `IPluginContext.LoadSettingStorage<T>()` / `SaveSettingStorage<T>()` 访问，无需关心具体路径
 
 ### 插件包格式 (.spkg)
 
@@ -353,6 +386,11 @@ git push origin v1.0.0
 | TTS | `TtsPluginBase` | `ITtsPlugin` | 文本转语音 |
 | 词汇 | `VocabularyPluginBase` | `IVocabularyPlugin` | 单词查询/管理 |
 
+**插件基类说明**：
+- `TranslatePluginBase`: 提供常用功能如语言映射、结果处理、HTTP 请求辅助
+- `LlmTranslatePluginBase`: 继承自 `TranslatePluginBase`，专为 LLM 服务设计，提供提示词编辑、流式响应处理
+- 插件基类位于 `STranslate.Plugin` 项目中，插件项目需引用该包
+
 ### 已知社区插件示例
 
 | 插件名称 | 类型 | 仓库地址 |
@@ -415,7 +453,7 @@ A: 在 `Languages/` 目录添加 `.xaml` 和 `.json` 文件，通过 `IPluginCon
 - **日志**: Serilog
 - **快捷键**: NHotkey.Wpf, MouseKeyHook
 - **HTTP**: System.Net.Http（支持代理）
-- **存储**: Microsoft.Data.Sqlite（历史数据库）
+- **存储**: Microsoft.Data.Sqlite（历史数据库位于 `%APPDATA%\STranslate\Cache\history.db`）
 - **更新**: Velopack
 - **插件加载**: System.Reflection.MetadataLoadContext
 - **IL 织入**: Costura.Fody（程序集合并）, MethodBoundaryAspect.Fody
@@ -432,6 +470,7 @@ A: 在 `Languages/` 目录添加 `.xaml` 和 `.json` 文件，通过 `IPluginCon
 - 插件实例**按服务创建**（非单例）
 - 使用 `IPluginContext` 获取插件功能（不要直接传递应用程序服务）
 - 预安装插件 ID 定义在 `Constant.cs:56-74`
+- **线程安全**：翻译请求使用 `SemaphoreSlim` 控制并发（默认 `ProcessorCount * 10`），所有插件操作支持 `CancellationToken` 取消
 - 插件程序集加载使用 `PluginAssemblyLoader` 和 `System.Reflection.MetadataLoadContext`
 - 服务被包装在 `Service` 类中，包含 `Plugin`, `MetaData`, `Context` 和 `Options`
 - 翻译插件可以扩展 `TranslatePluginBase` 或 `LlmTranslatePluginBase` 以获得 LLM 功能

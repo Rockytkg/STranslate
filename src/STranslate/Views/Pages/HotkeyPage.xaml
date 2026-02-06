@@ -122,9 +122,7 @@
                             WindowTitle="{DynamicResource Hotkey_InputTranslate}" />
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard
-                        Description="{DynamicResource Hotkey_CrosswordTranslateDescription}"
-                        Header="{DynamicResource Hotkey_CrosswordTranslate}">
+                    <ui:SettingsCard Description="{DynamicResource Hotkey_CrosswordTranslateDescription}" Header="{DynamicResource Hotkey_CrosswordTranslate}">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Keyboard_24_Regular}" />
                         </ui:SettingsCard.HeaderIcon>
@@ -135,13 +133,12 @@
                             WindowTitle="{DynamicResource Hotkey_CrosswordTranslate}" />
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard
-                        Description="{DynamicResource Hotkey_CrosswordTranslateByCtrlSameCDescription}"
-                        Header="Ctrl+C+C">
+                    <ui:SettingsCard Description="{DynamicResource Hotkey_CrosswordTranslateByCtrlSameCDescription}" Header="Ctrl+C+C">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.Copy_24_Regular}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ui:ToggleSwitch
+                            Margin="0,0,8,0"
                             IsOn="{Binding HotkeySettings.CrosswordTranslateByCtrlSameC}"
                             OffContent="{DynamicResource Off}"
                             OnContent="{DynamicResource On}" />

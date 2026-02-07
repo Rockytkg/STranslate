@@ -108,6 +108,8 @@
             IsOcrVisible="{Binding Settings.IsOcrVisible}"
             IsScreenshotTranslateVisible="{Binding Settings.IsScreenshotTranslateVisible}"
             IsTopmost="{Binding IsTopmost}"
+            IsClipboardMonitoring="{Binding IsClipboardMonitoring}"
+            IsClipboardMonitorVisible="{Binding Settings.IsClipboardMonitorVisible}"
             OcrCommand="{Binding OcrCommand}"
             ScreenshotTranslateCommand="{Binding ScreenshotTranslateCommand}"
             SettingCommand="{Binding OpenSettingsCommand}" />

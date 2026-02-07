@@ -101,6 +101,12 @@
                                     ToolTip="{DynamicResource General_AutoTranslate}"
                                     Type="Toggle"
                                     Visibility="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsAutoTranslateVisible, Converter={cnvt:BoolToVisibilityConverter}}" />
+                                <control:IconButton
+                                    Icon="{x:Static ui:FluentSystemIcons.ClipboardMore_20_Regular}"
+                                    IsOn="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsClipboardMonitoring}"
+                                    ToolTip="{DynamicResource ClipboardMonitorButtonTooltip}"
+                                    Type="Toggle"
+                                    Visibility="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsClipboardMonitorVisible, Converter={cnvt:BoolToVisibilityConverter}}" />
                             </ikw:SimpleStackPanel>
                         </DockPanel>
                     </Border>

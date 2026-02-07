@@ -27,6 +27,40 @@ public class HeaderControl : Control
                 false,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+    #region ClipboardMonitor
+
+    public bool IsClipboardMonitoring
+    {
+        get => (bool)GetValue(IsClipboardMonitoringProperty);
+        set => SetValue(IsClipboardMonitoringProperty, value);
+    }
+
+    public static readonly DependencyProperty IsClipboardMonitoringProperty =
+        DependencyProperty.Register(
+            nameof(IsClipboardMonitoring),
+            typeof(bool),
+            typeof(HeaderControl),
+            new FrameworkPropertyMetadata(
+                false,
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public bool IsClipboardMonitorVisible
+    {
+        get => (bool)GetValue(IsClipboardMonitorVisibleProperty);
+        set => SetValue(IsClipboardMonitorVisibleProperty, value);
+    }
+
+    public static readonly DependencyProperty IsClipboardMonitorVisibleProperty =
+        DependencyProperty.Register(
+            nameof(IsClipboardMonitorVisible),
+            typeof(bool),
+            typeof(HeaderControl),
+            new FrameworkPropertyMetadata(
+                true,
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    #endregion
+
     #region Setting
 
     public bool IsSettingVisible

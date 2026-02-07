@@ -142,6 +142,7 @@
     <sys:String x:Key="Hotkey_ClipboardMonitorDescription">Toggle clipboard monitoring. When enabled, clipboard changes will trigger automatic translation.</sys:String>
     <sys:String x:Key="ClipboardMonitorStarted">Clipboard monitoring started</sys:String>
     <sys:String x:Key="ClipboardMonitorStopped">Clipboard monitoring stopped</sys:String>
+    <sys:String x:Key="ClipboardMonitorButtonTooltip">Clipboard Monitor Translate</sys:String>
     <sys:String x:Key="Hotkey_CancelOrHide">Cancel | Hide Interface</sys:String>
     <sys:String x:Key="Hotkey_CancelOrHideDescription">Cancel pending requests | Hide interface. Applies to all windows.</sys:String>
     <sys:String x:Key="Hotkey_MainWindow">Main Window Hotkey</sys:String>

@@ -68,6 +68,8 @@ public partial class Settings : ObservableObject
 
     [ObservableProperty] public partial bool IsOcrVisible { get; set; } = true;
 
+    [ObservableProperty] public partial bool IsClipboardMonitorVisible { get; set; } = true;
+
     [ObservableProperty] public partial DoubleClickTrayFunction DoubleClickTrayFunction { get; set; }
 
     [ObservableProperty] public partial CopyAfterTranslation CopyAfterTranslation { get; set; }

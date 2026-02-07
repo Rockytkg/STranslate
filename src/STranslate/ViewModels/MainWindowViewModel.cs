@@ -1134,15 +1134,19 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void ToggleClipboardMonitor()
+    private void ToggleClipboardMonitor() => IsClipboardMonitoring = !IsClipboardMonitoring;
+
+    partial void OnIsClipboardMonitoringChanged(bool value) => ToggleClipboardMonitorHandler(value);
+
+    private void ToggleClipboardMonitorHandler(bool value)
     {
-        if (IsClipboardMonitoring)
+        if (value)
         {
-            StopClipboardMonitor();
+            StartClipboardMonitor();
         }
         else
         {
-            StartClipboardMonitor();
+            StopClipboardMonitor();
         }
     }
 
@@ -1151,7 +1155,6 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         _clipboardMonitor ??= new ClipboardMonitor(MainWindow);
         _clipboardMonitor.OnClipboardTextChanged += OnClipboardTextChanged;
         _clipboardMonitor.Start();
-        IsClipboardMonitoring = true;
         _notification.Show(
             _i18n.GetTranslation("Hotkey_ClipboardMonitor"),
             _i18n.GetTranslation("ClipboardMonitorStarted"));
@@ -1164,7 +1167,6 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             _clipboardMonitor.OnClipboardTextChanged -= OnClipboardTextChanged;
             _clipboardMonitor.Stop();
         }
-        IsClipboardMonitoring = false;
         _notification.Show(
             _i18n.GetTranslation("Hotkey_ClipboardMonitor"),
             _i18n.GetTranslation("ClipboardMonitorStopped"));
@@ -1776,11 +1778,12 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        _debounceExecutor.Dispose();
-        _clipboardMonitor?.Dispose();
-
         MouseKeyHelper.MouseTextSelected -= OnMouseTextSelected;
         MouseKeyHelper.MouseTextSelected -= OnMouseTextSelectedIncretemental;
+        _clipboardMonitor?.OnClipboardTextChanged -= OnClipboardTextChanged;
+
+        _debounceExecutor.Dispose();
+        _clipboardMonitor?.Dispose();
 
         // 如果窗口一直没打开过，恢复位置后再退出
         if (Settings.MainWindowLeft <= -18000 && Settings.MainWindowTop <= -18000)

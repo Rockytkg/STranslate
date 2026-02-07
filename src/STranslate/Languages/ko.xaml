@@ -91,6 +91,8 @@
     <sys:String x:Key="General_ShowHistoryNavigationDescription">메인 화면에 이전/다음 번역 기록 탐색 아이콘 표시 여부.</sys:String>
     <sys:String x:Key="General_ShowOcrButton">OCR 버튼 표시</sys:String>
     <sys:String x:Key="General_ShowOcrButtonDescription">메인 화면 제목 표시줄에 OCR 버튼을 표시합니다.</sys:String>
+    <sys:String x:Key="General_ShowClipboardMonitor">클립보드 모니터링 버튼 표시</sys:String>
+    <sys:String x:Key="General_ShowClipboardMonitorDescription">메인 화면 제목 표시줄에 클립보드 모니터링 전환 버튼을 표시합니다.</sys:String>
     <sys:String x:Key="General_FontSize">글꼴 크기</sys:String>
     <sys:String x:Key="General_FontSizeDescription">「우클릭 메뉴」를 제외한 모든 글꼴 크기를 조정합니다.</sys:String>
     <sys:String x:Key="General_OutputShowingControl">출력 표시 제어</sys:String>

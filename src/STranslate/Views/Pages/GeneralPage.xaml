@@ -489,61 +489,74 @@
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsCard Description="{DynamicResource General_ShowMouseHookDescription}" Header="{DynamicResource General_ShowMouseHook}">
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.KeyboardMouse_16_Regular}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <ui:ToggleSwitch
-                        IsOn="{Binding Settings.IsMouseHookVisible}"
-                        OffContent="{DynamicResource Hide}"
-                        OnContent="{DynamicResource Show}" />
-                </ui:SettingsCard>
+                <control:CardGroup>
 
-                <ui:SettingsCard Description="{DynamicResource General_ShowHistoryNavigationDescription}" Header="{DynamicResource General_ShowHistoryNavigation}">
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.AppRecent_20_Regular}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <ui:ToggleSwitch
-                        IsOn="{Binding Settings.IsHistoryNavigationVisible}"
-                        OffContent="{DynamicResource Hide}"
-                        OnContent="{DynamicResource Show}" />
-                </ui:SettingsCard>
+                    <ui:SettingsCard Description="{DynamicResource General_ShowMouseHookDescription}" Header="{DynamicResource General_ShowMouseHook}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.KeyboardMouse_16_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsMouseHookVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
 
-                <ui:SettingsCard Description="{DynamicResource General_ShowScreenshotTranslateDescription}" Header="{DynamicResource General_ShowScreenshotTranslate}">
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ScreenCut_20_Regular}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <ui:ToggleSwitch
-                        IsOn="{Binding Settings.IsScreenshotTranslateVisible}"
-                        OffContent="{DynamicResource Hide}"
-                        OnContent="{DynamicResource Show}" />
-                </ui:SettingsCard>
+                    <ui:SettingsCard Description="{DynamicResource General_ShowHistoryNavigationDescription}" Header="{DynamicResource General_ShowHistoryNavigation}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.AppRecent_20_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsHistoryNavigationVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
 
-                <ui:SettingsCard Header="{DynamicResource General_ShowImageTranslate}">
-                    <ui:SettingsCard.Description>
-                        <WrapPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Bottom" Text="{DynamicResource General_ShowImageTranslateDescription}" />
-                            <ui:HyperlinkButton Content="{DynamicResource Document}" NavigateUri="https://stranslate.zggsong.com/docs/#%E5%9B%BE%E7%89%87%E7%BF%BB%E8%AF%91" />
-                        </WrapPanel>
-                    </ui:SettingsCard.Description>
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawImage_20_Regular}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <ui:ToggleSwitch
-                        IsOn="{Binding Settings.IsImageTranslateVisible}"
-                        OffContent="{DynamicResource Hide}"
-                        OnContent="{DynamicResource Show}" />
-                </ui:SettingsCard>
+                    <ui:SettingsCard Description="{DynamicResource General_ShowScreenshotTranslateDescription}" Header="{DynamicResource General_ShowScreenshotTranslate}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ScreenCut_20_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsScreenshotTranslateVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
 
-                <ui:SettingsCard Description="{DynamicResource General_ShowOcrButtonDescription}" Header="{DynamicResource General_ShowOcrButton}">
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ScanType_20_Regular}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <ui:ToggleSwitch
-                        IsOn="{Binding Settings.IsOcrVisible}"
-                        OffContent="{DynamicResource Hide}"
-                        OnContent="{DynamicResource Show}" />
-                </ui:SettingsCard>
+                    <ui:SettingsCard Header="{DynamicResource General_ShowImageTranslate}">
+                        <ui:SettingsCard.Description>
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Bottom" Text="{DynamicResource General_ShowImageTranslateDescription}" />
+                                <ui:HyperlinkButton Content="{DynamicResource Document}" NavigateUri="https://stranslate.zggsong.com/docs/#%E5%9B%BE%E7%89%87%E7%BF%BB%E8%AF%91" />
+                            </WrapPanel>
+                        </ui:SettingsCard.Description>
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DrawImage_20_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsImageTranslateVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Description="{DynamicResource General_ShowOcrButtonDescription}" Header="{DynamicResource General_ShowOcrButton}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ScanType_20_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsOcrVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Description="{DynamicResource General_ShowClipboardMonitorDescription}" Header="{DynamicResource General_ShowClipboardMonitor}">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.ClipboardMore_20_Regular}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:ToggleSwitch
+                            IsOn="{Binding Settings.IsClipboardMonitorVisible}"
+                            OffContent="{DynamicResource Hide}"
+                            OnContent="{DynamicResource Show}" />
+                    </ui:SettingsCard>
+                </control:CardGroup>
 
                 <ui:SettingsCard Description="{DynamicResource General_ShowScreenshotAuxiliaryLinesDescription}" Header="{DynamicResource General_ShowScreenshotAuxiliaryLines}">
                     <ui:SettingsCard.HeaderIcon>
